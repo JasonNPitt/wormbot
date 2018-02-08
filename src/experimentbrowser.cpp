@@ -16,10 +16,10 @@
 #include <inttypes.h>
 #include <vector>
 #include <fcntl.h>
-#include <linux/kd.h>
+//#include <linux/kd.h>
 #include <sys/ioctl.h>
-#include <boost/algorithm/string.hpp> // include Boost, a C++ library
-#include <boost/lexical_cast.hpp>
+//#include <boost/algorithm/string.hpp> // include Boost, a C++ library
+//#include <boost/lexical_cast.hpp>
 
 #include <fstream>
 #include <iomanip>
@@ -27,7 +27,7 @@
 #include <cstdio>
 
 #include <errno.h>
-#include <linux/videodev2.h>
+//#include <linux/videodev2.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
