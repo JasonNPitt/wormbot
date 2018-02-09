@@ -198,27 +198,19 @@ public:
 string swapTimes(string filename, string newfilename){
 	stringstream outtime;
 
-		struct stat attr;
-		struct utimbuf thetimev;
-		stat(filename.c_str(),&attr);
-		long time = attr.st_mtim.tv_sec;
+	struct stat attr;
+	struct utimbuf thetimev;
+	stat(filename.c_str(),&attr);
 
+	//cout << "setframetime:" << time << endl;
+	thetimev.actime=attr.st_mtim.tv_sec;
+	thetimev.modtime=attr.st_mtim.tv_sec;
+	//TIMESPEC_TO_TIMEVAL(&thetimev, &attr.st_mtim);
+	outtime << ctime(&thetimev.modtime);
 
-		//cout << "setframetime:" << time << endl;
-		thetimev.actime=attr.st_mtim.tv_sec;
-		thetimev.modtime=attr.st_mtim.tv_sec;
+	utime(newfilename.c_str(), &thetimev);
 
-
-		//TIMESPEC_TO_TIMEVAL(&thetimev, &attr.st_mtim);
-		outtime << ctime(&thetimev.modtime);
-
-		utime(newfilename.c_str(), &thetimev);
-
-
-
-		return (outtime.str());
-
-
+	return (outtime.str());
 }
 
 

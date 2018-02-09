@@ -1,6 +1,7 @@
 #!/bin/bash
 
 sudo apt install git cmake libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev ubuntu-restricted-extras libcgicc5-dev libboost-dev apache2 libserial-dev
+# maybe libcgicc3?????
 
 # ffmpeg
 cd ~

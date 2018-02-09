@@ -1,48 +1,19 @@
 //============================================================================
 // Name        : experimentbrowser.cpp
-// Author      : Jason N Pitt
+// Author      : Jason N Pitt and Nolan Strait
 // Version     :
 // Copyright   : MIT LICENSE
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
 
-
-#include <iostream>
-#include <sys/time.h>
-#include <unistd.h>
 #include <sstream>
-#include <stdlib.h>
-#include <inttypes.h>
-#include <vector>
-#include <fcntl.h>
-//#include <linux/kd.h>
-#include <sys/ioctl.h>
-//#include <boost/algorithm/string.hpp> // include Boost, a C++ library
-//#include <boost/lexical_cast.hpp>
-
 #include <fstream>
-#include <iomanip>
-#include <unistd.h>
-#include <cstdio>
-
-#include <errno.h>
-//#include <linux/videodev2.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
-#include <unistd.h>
-
-#include <vector>
-#include <stdio.h>
-
-//#include "cgic.h"
 #include <cgicc/CgiDefs.h>
 #include <cgicc/Cgicc.h>
 #include <cgicc/HTTPHTMLHeader.h>
 #include <cgicc/HTMLClasses.h>
+
 
 #define WELL_STATE_START 2
 #define WELL_STATE_ACTIVE 1
@@ -51,11 +22,12 @@
 
 using namespace std;
 using namespace cgicc;
-//using namespace boost;
+
 
 //globals
 Cgicc cgi;
 string datapath;
+
 
 int main(int argc, char **argv) {
    try {
