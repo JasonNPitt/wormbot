@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt install cmake libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev ubuntu-restricted-extras libcgicc5-dev libboost-dev apache2
+sudo apt install git cmake libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev ubuntu-restricted-extras libcgicc5-dev libboost-dev apache2 libserial-dev
 
 # ffmpeg
 cd ~
@@ -28,3 +28,5 @@ sudo make install
 cd ~
 #rm -rf opencv-3.3.0
 
+# libserial
+git clone https://github.com/crayzeewulf/libserial.git

@@ -1,6 +1,6 @@
 //============================================================================
 // Name        : kaebot.cpp
-// Author      : Jason N Pitt
+// Authors     : Jason N Pitt and Nolan Strait
 // Version     :
 // Copyright   : MIT LICENSE
 // Description : robot controller for worm lifespans
@@ -18,9 +18,8 @@
 #include <fcntl.h>
 #include <linux/kd.h>
 #include <sys/ioctl.h>
-#include <boost/algorithm/string.hpp> // include Boost, a C++ library
+#include <boost/algorithm/string.hpp> 
 #include <boost/lexical_cast.hpp>
-
 
 #include <fstream>
 #include <iomanip>
@@ -43,7 +42,8 @@
 #include <opencv2/opencv.hpp>
 #include <opencv/cv.hpp>
 #include <opencv2/videoio.hpp>
-#include <constants.h>
+
+#include "constants.h"
 
 //#include <json.hpp>
 //#include <chrono>
@@ -51,7 +51,6 @@
 //using json = nlohmann::json;
 
 using namespace cv;
-using namespace std;
 
 uint8_t *buffer;
 
@@ -352,16 +351,18 @@ public:
 
 	void setStatus(int setstat){
 		status = setstat;
-	}//end setStatus
+	}
 
     string printWell(void){
     	stringstream ss;
-    	ss << expID << "," << status << "," << plate << "," << wellname << "," << xval << "," << yval<< "," << directory
+    	ss << expID << "," << status << "," << plate << "," << wellname << "," << xval
+				<< "," << yval<< "," << directory
     			<< "," << timelapseActive << "," << monitorSlot << "," << email
-    			<< "," << investigator << "," << title << "," << description << "," << startingN << "," << startingAge << "," << strain
+    			<< "," << investigator << "," << title << "," << description << "," << startingN
+				<< "," << startingAge << "," << strain
     			<<  "," << currentframe << "," << starttime << endl;
     	return (ss.str());
-    }//end printwell
+    }
 
 
 	int getRank(string thewelltorank) {
@@ -384,13 +385,13 @@ public:
 
 		}   //end while lines in the file
 
-		for (int i = 0; i < wellorder.size(); i++) {
+		for (int i = 0; i < (int) wellorder.size(); i++) {
 			if (thewelltorank.find(wellorder[i]) == 0)
 				return (i);
 		}   //end for each well
 
 		return (0);
-	}   //end getRank
+	}
 
 
 	bool operator <(const Well str) const {
@@ -565,7 +566,7 @@ public:
 
 		return (1);
 
-	}//end capture frame
+	}
 
 
 	int captureVideo() {
@@ -708,31 +709,6 @@ void scanExperiments(void) {
 }
 
 
-Mat GetGradient(Mat src_gray) {
-  Mat grad_x, grad_y;
-  Mat abs_grad_x, abs_grad_y;
-
-  int scale = 1;
-  int delta = 0;
-  int ddepth = CV_32FC1; ;
-
-  // Calculate the x and y gradients using Sobel operator
-  Sobel( src_gray, grad_x, ddepth, 1, 0, 3, scale, delta, BORDER_DEFAULT );
-  convertScaleAbs( grad_x, abs_grad_x );
-
-  Sobel( src_gray, grad_y, ddepth, 0, 1, 3, scale, delta, BORDER_DEFAULT );
-  convertScaleAbs( grad_y, abs_grad_y );
-
-  // Combine the two gradients
-  Mat grad;
-  addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad );
-
-  return grad;
-}
-
-
-
-
 bool addMonitorJob(Well* well) {
 	if (well->monitorSlot == MONITOR_STATE_START) {
 		// find open monitor slot
@@ -773,15 +749,15 @@ void printCurrExperiments(void){
 }//end printCurrExperiments
 
 
-void setVfl2(string setting, string cameradev){
+void setVfl2(string setting, string cameradev) {
 	stringstream camerasettings;
 	camerasettings << "v4l2-ctl -d " << cameradev <<" -c " << setting << endl;
 	system(camerasettings.str().c_str());
 	cout << setting <<endl;
-}//end setvfl2
+}
 
 
-string setupCamera(void){
+string setupCamera(void) {
 	string camfile(datapath + string("camera.config"));
 	ifstream inputfile(camfile.c_str());
 	string configline;
@@ -789,38 +765,43 @@ string setupCamera(void){
 	getline(inputfile,cameradevice);
 	while (getline(inputfile, configline)){
 		setVfl2(configline,cameradevice);
-	}//end while
+	}
 	return cameradevice;
-}//end setupCamera
+}
 
-string fdGetLine(int fd){
+
+string fdGetLine(int fd) {
 	stringstream ss;
 	char c[1];
 	while(1){
 		if (read(fd,c,1)==0) break;
 		ss << c[0];
 		if (c[0] == '\n' ) break;
-	}//end while not newline
+	}
 	return ss.str();
-}//end fdGetLine
+}
 
-string fdGetFile(int fd){
+
+string fdGetFile(int fd) {
 	stringstream ss;
-		char c[1];
-		while(1){
-			if (read(fd,c,1)==0) break;
-			ss << c[0];
-
-		}//end while not
-		return ss.str();
-
-}//end fdGetFile
+	char c[1];
+	while(1){
+		if (read(fd,c,1)==0) break;
+		ss << c[0];
+	}
+	return ss.str();
+}
 
 
 int checkJoblistUpdate(void) {
 
 	string filename = datapath + "RRRjoblist.csv";
 	int fd = open (filename.c_str(), O_RDONLY);
+
+	// exit if file not found
+	if (fd == -1) {
+		cout << "  failed to find joblist\n";  exit(EXIT_FAILURE);
+	}
 
 	/* Initialize the flock structure. */
 	struct flock lock;
@@ -832,9 +813,7 @@ int checkJoblistUpdate(void) {
 	//cout <<"locked...checkjoblistupdate\n ";
 
 	//size_t len = 10; //read in first 10 bytes
-
-	if (fd == NULL) {cout << "  failed to find joblist\n";  exit(EXIT_FAILURE);} //exit if file gone
-
+	 
 	string fileheader = fdGetLine(fd);
 
 	lock.l_type = F_UNLCK;
@@ -849,8 +828,6 @@ int checkJoblistUpdate(void) {
 
 
 
-
-
 // Load experiments from the joblist
 // @param init indicates we've just turned on the robot with true
 void syncWithJoblist(bool init = false) {
@@ -858,7 +835,7 @@ void syncWithJoblist(bool init = false) {
 	string filename = datapath + "RRRjoblist.csv";
 	int fd = open(filename.c_str(), O_RDONLY);
 
-	if (fd == NULL) {
+	if (fd == -1) {
 		cout << "  failed to find joblist" << endl;
 		exit(EXIT_FAILURE);
 	} //exit if file gone
@@ -963,25 +940,28 @@ void writeToLog(string logline){
 	ofstream ofile("/disk1/runlog", std::ofstream::app);
 	ofile << logline << endl;
 	ofile.close();
-}//end write to log
+}
 
 
 void eraseLog(void){
 	ofstream ofile("/disk1/runlog");
 	ofile << "start log" <<endl;
 	ofile.close();
-}//end write to log
+}
 
-
-//Timer timeouttimer((long)0);
 
 
 int main(int argc, char** argv) {
-	//raiseBeep();
-	//cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
-	//daemon(0,1);
-	//chordBeep(1);
-	//system("cd /disk1/robot_data; ./play.sh mario.song");
+
+	bool skipIntro = false;
+
+	if (!skipIntro) {
+		raiseBeep(10);
+		cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
+		daemon(0,1);
+		chordBeep(1);
+		system("cd /disk1/robot_data; ./play.sh mario.song");
+	}
 
 	string read;
 	string camera;
@@ -1018,7 +998,7 @@ int main(int argc, char** argv) {
 
 		cout << "Set baud rate 9600 and char size 8 bits\n Waiting for Robot to be ready." << endl;
 
-		//wait for scanner to be ready
+		// wait for scanner
 		Timer startupwait;
 		startupwait.startTimer(long(120));
 		while (read.find("RR") == string::npos) {
@@ -1031,11 +1011,11 @@ int main(int argc, char** argv) {
 				cout << "Gave up scanning port: " << arduinoport << endl;
 				ardu.Close();
 				goto ScanPort;
-			} //end if waited too long
+			} // end if waited too long
 		}
 		robotfound = 1;
 
-	} //end while no robot found
+	} 
 
 
 	// initialize record slots to null
@@ -1097,7 +1077,8 @@ int main(int argc, char** argv) {
 					// start video analysis
 					stringstream cmd;
 					cmd << "sudo /usr/lib/cgi-bin/wormtracker " // location of wormtracker
-						<< currWell->directory << "/day" << currWell->getCurrAge() << ".avi" << " " // video file
+						<< currWell->directory << "/day" << currWell->getCurrAge()
+						<< ".avi" << " " // video file
 						<< currWell->directory // dir to put analysis data
 						<< " &"; // run process in background
 					system(cmd.str().c_str());
