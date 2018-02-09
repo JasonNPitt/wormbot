@@ -24,6 +24,9 @@ experimentbrowser: src/experimentbrowser.cpp
 marker: src/marker.cpp
 	$(CXX) $(CFLAGS) src/marker.cpp $(OPENCV_LIB) -lcgicc -o bin/marker
 
+scheduler: src/scheduler.cpp
+	$(CXX) $(CFLAGS) src/scheduler.cpp -lcgicc -o bin/scheduler
+
 
 %.o: %.cpp
 	echo heyo
