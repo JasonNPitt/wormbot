@@ -27,6 +27,11 @@ marker: src/marker.cpp
 scheduler: src/scheduler.cpp
 	$(CXX) $(CFLAGS) src/scheduler.cpp -lcgicc -o bin/scheduler
 
+all: alignerd controller experimentbrowser marker scheduler
+
+clean:
+	rm bin/*
+
 
 %.o: %.cpp
 	echo heyo

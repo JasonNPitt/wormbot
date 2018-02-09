@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : imagealigner.cpp
+// Name        : alignerd.cpp
 // Author      : Jason N Pitt
 // Version     :
 // Copyright   : MIT LICENSE
@@ -8,47 +8,16 @@
 
 #include <iostream>
 #include <sys/time.h>
-#include <unistd.h>
-#include <sstream>
 #include <stdlib.h>
-#include <inttypes.h>
 #include <glob.h>
-#include <vector>
-#include <fcntl.h>
-#include <linux/kd.h>
-#include <sys/ioctl.h>
-#include <boost/algorithm/string.hpp> // include Boost, a C++ library
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <utime.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
-#include <syslog.h>
-
-
-
-
 #include <fstream>
-#include <iomanip>
-#include <unistd.h>
 #include <cstdio>
-#include <errno.h>
-#include <linux/videodev2.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
 #include <unistd.h>
 
-#include <vector>
-#include <stdio.h>
+#include <boost/algorithm/string.hpp>
 
-
-
-#include <opencv2/opencv.hpp>
 #include <opencv/cv.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -56,20 +25,18 @@
 #define DELAY_TIME 1800
 
 
-
 using namespace std;
 
 using namespace cv;
 using namespace boost;
 
-//globals
+
 
 string directory("");
 
 string currfilename;
 ofstream logfile("/disk1/robot_data/alignerd.log", ofstream::app);
 streambuf *coutbuf = std::cout.rdbuf(); //save old buf
-
 
 
 
