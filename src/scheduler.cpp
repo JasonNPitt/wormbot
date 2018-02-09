@@ -1,7 +1,3 @@
-
-/* CGi test*/
-
-
 #include <iostream>
 #include <sys/time.h>
 #include <unistd.h>

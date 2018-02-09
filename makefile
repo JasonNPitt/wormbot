@@ -1,6 +1,6 @@
 # define commands to use for compilation
 CXX = g++
-CFLAGS = -g -Wall -Wpedantic -O0
+CFLAGS = -g -w -Wall -Wpedantic -O0
 
 OPENCV_LIB = -lopencv_dnn -lopencv_ml -lopencv_objdetect -lopencv_shape -lopencv_stitching -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_video -lopencv_photo -lopencv_imgproc -lopencv_flann -lopencv_core
 
@@ -20,6 +20,9 @@ controller: src/controller.cpp
 
 experimentbrowser: src/experimentbrowser.cpp
 	$(CXX) $(CFLAGS) src/experimentbrowser.cpp -lcgicc -o bin/experimentbrowser
+
+marker: src/marker.cpp
+	$(CXX) $(CFLAGS) src/marker.cpp $(OPENCV_LIB) -lcgicc -o bin/marker
 
 
 %.o: %.cpp

@@ -1,55 +1,25 @@
 //============================================================================
-// Name        : imagealigner.cpp
-// Author      : Jason N Pitt
+// Name        : marker.cpp
+// Author      : Jason N Pitt and Nolan Strait
 // Version     :
 // Copyright   : MIT LICENSE
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
-#include <iostream>
-#include <sys/time.h>
-#include <unistd.h>
-#include <sstream>
-#include <stdlib.h>
+
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <inttypes.h>
 #include <glob.h>
-#include <vector>
-#include <fcntl.h>
-#include <linux/kd.h>
-#include <sys/ioctl.h>
 #include <boost/algorithm/string.hpp> // include Boost, a C++ library
 #include <boost/lexical_cast.hpp>
-
-
-#include <fstream>
-#include <iomanip>
-#include <unistd.h>
-#include <cstdio>
-#include <errno.h>
-#include <linux/videodev2.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
-#include <unistd.h>
-
 #include <vector>
 #include <stdio.h>
 
-//#include "cgic.h"
 #include <cgicc/CgiDefs.h>
 #include <cgicc/Cgicc.h>
 #include <cgicc/HTTPHTMLHeader.h>
 #include <cgicc/HTMLClasses.h>
 
 #include <opencv2/opencv.hpp>
-//#include <opencv/cv.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/imgcodecs.hpp>
-
 
 
 using namespace std;
