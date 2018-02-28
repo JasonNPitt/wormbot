@@ -565,7 +565,7 @@ main(int argc,
       cout << HTTPHTMLHeader() << endl;
 
       // Set up the HTML document
-      cout << html() << head(title("Kaeberlein Lab Worm Lifespan Robot Scheduler")) << endl;
+      cout << html() << head(title("WormBot Scheduler")) << endl;
       cout << body() << endl;
 
       cout << img().set("src","http://kaeberleinlab.org/images/kaeberlein-lab-logo-2.png") << endl;
