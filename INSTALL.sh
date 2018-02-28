@@ -31,3 +31,5 @@ cd ~
 
 # libserial
 git clone https://github.com/crayzeewulf/libserial.git
+
+sudo ldconfig -v
