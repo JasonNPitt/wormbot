@@ -1,3 +1,9 @@
 Write startup file for kaebot and aligner daemon
 
 Look into OASIS 2 for data analysis
+
+copy needed apps and files to CGI-bin and /var/www/html  
+
+need to add "sudo ldconfig -v" to the install script to make the openCV lib accessable
+
+
