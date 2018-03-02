@@ -1,4 +1,5 @@
 Write startup file for kaebot and aligner daemon
+Script must be in '/etc/init.d/'
 
 Look into OASIS 2 for data analysis
 

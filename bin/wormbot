@@ -1,0 +1,15 @@
+#!/bin/bash
+
+ROOT_DIR=/wormbot
+
+case "$1" in
+	controller)
+		$ROOT_DIR/controller
+		# will eventually want to execute in background
+		;;
+	aligner)
+		$ROOT_DIR/aligerd
+		;;
+	*)
+		echo $"Usage: $0 {aligner|controller}"
+		exit 1

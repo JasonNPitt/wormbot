@@ -1,0 +1,35 @@
+#!/bin/bash
+
+
+# save working directory
+wd=(pwd)
+
+
+# define constants
+ROOT_DIR=/wormbot
+WEB_DIR=/var/www/wormbot
+
+
+# setup directories in root
+sudo mkdir $ROOT_DIR
+sudo mkdir $ROOT_DIR/experiments
+sudo mkdir $WEB_DIR
+sudo mkdir $WEB_DIR/experiments
+sudo chmod a+r $WEB_DIR/experiments
+sudo ln --symbolic -T $ROOT_DIR/experiments $WEB_DIR/experiments
+
+
+# move necessary files to root dir
+sudo cp camera.config platecoordinates.dat $ROOT_DIR
+
+
+# move necessary files to web dir
+sudo cp -r img $WEB_DIR
+
+
+# move necessary files to cgi-bin
+sudo cp bin/experimentbrowser bin/marker bin/scheduler /usr/lib/cgi-bin
+
+
+# move script for wormbot in command-line
+sudo cp bin/wormbot /bin

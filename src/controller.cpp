@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : kaebot.cpp
+// Name        : controller.cpp
 // Authors     : Jason N Pitt and Nolan Strait
 // Version     :
 // Copyright   : MIT LICENSE
@@ -7,6 +7,7 @@
 //============================================================================
 
 #include <iostream>
+#include <stdio.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -17,13 +18,12 @@
 #include <SerialStream.h>
 #include <fcntl.h>
 #include <linux/kd.h>
-#include <sys/ioctl.h>
+
 #include <boost/algorithm/string.hpp> 
 #include <boost/lexical_cast.hpp>
 
 #include <fstream>
 #include <iomanip>
-#include <unistd.h>
 #include <cstdio>
 #include <ctime>
 
@@ -31,24 +31,16 @@
 #include <linux/videodev2.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
-#include <unistd.h>
 
-#include <vector>
-#include <stdio.h>
 #include <opencv2/opencv.hpp>
 #include <opencv/cv.hpp>
 #include <opencv2/videoio.hpp>
 
 #include "constants.h"
 
-//#include <json.hpp>
-//#include <chrono>
-
-//using json = nlohmann::json;
 
 using namespace cv;
 
@@ -57,11 +49,13 @@ uint8_t *buffer;
 using namespace std;
 using namespace LibSerial;
 
+
 #define TESTING false // speeds up process for faster debugging
 
 #define BLANKUPDATE ",,,,,,,"
 
 #define PORT "/dev/ttyUSB0" //This is system-specific"/tmp/interceptty"
+
 
 #define MAX_PLATES 12
 #define MAX_WELLS 12
@@ -309,6 +303,7 @@ public:
 			starttime = t_stat.st_mtime;
 		}
 
+		cout << "h0" << endl;
 		string torank = boost::lexical_cast<string>(plate) + wellname;
 		rank = getRank(torank);
 
@@ -796,6 +791,7 @@ string fdGetFile(int fd) {
 int checkJoblistUpdate(void) {
 
 	string filename = datapath + "RRRjoblist.csv";
+	//cout << "  opening " << filename.c_str() << endl;
 	int fd = open (filename.c_str(), O_RDONLY);
 
 	// exit if file not found
@@ -953,15 +949,16 @@ void eraseLog(void){
 
 int main(int argc, char** argv) {
 
-	bool skipIntro = false;
+	bool skipIntro = true;
 
 	if (!skipIntro) {
 		raiseBeep(10);
-		cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
-		daemon(0,1);
 		chordBeep(1);
 		system("cd /disk1/robot_data; ./play.sh mario.song");
 	}
+
+	cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
+	daemon(0,1);
 
 	string read;
 	string camera;
@@ -969,7 +966,7 @@ int main(int argc, char** argv) {
 	string machineMax("LL");
 	string machineRestX("MX150");
 	string machineRestY("MY150");
-	ifstream readpath("robot_data_path");
+	ifstream readpath("data_path");
 	readpath >> datapath;
 	cout << "OpenCV " << CV_MAJOR_VERSION << "." << CV_MINOR_VERSION << endl;
 	string arduinoport(PORT);
