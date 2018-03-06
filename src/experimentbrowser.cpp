@@ -32,7 +32,7 @@ string datapath;
 int main(int argc, char **argv) {
    try {
 
-	  ifstream readpath("robot_data_path");
+	  ifstream readpath("data_path");
 	  readpath >> datapath;
 
 	  // get current experiment ID

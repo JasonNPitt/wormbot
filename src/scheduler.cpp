@@ -559,7 +559,7 @@ main(int argc,
 {
    try {
 
-	  ifstream readpath("robot_data_path");
+	  ifstream readpath("data_path");
 	  readpath >> datapath;
       // Send HTTP header
       cout << HTTPHTMLHeader() << endl;

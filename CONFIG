@@ -4,10 +4,24 @@
 # save working directory
 wd=(pwd)
 
+TESTING=true
+
 
 # define constants
-ROOT_DIR=/wormbot
+ROOT_DIR=$(cat var/root_dir)
 WEB_DIR=/var/www/wormbot
+
+
+# handle installation directory
+if [ "$#" -eq 1 ]
+then
+	ROOT_DIR=$1
+	echo $ROOT_DIR > var/root_dir
+elif [ "$#" -gt 1 ]
+then
+	echo "Usage: $0 [DIR]"
+	exit
+fi
 
 
 # setup directories in root
@@ -33,3 +47,8 @@ sudo cp bin/experimentbrowser bin/marker bin/scheduler /usr/lib/cgi-bin
 
 # move script for wormbot in command-line
 sudo cp bin/wormbot /bin
+
+if [ $TESTING ]
+then
+	cp -r test_data/* $ROOT_DIR/experiments
+fi

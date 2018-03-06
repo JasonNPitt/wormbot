@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROOT_DIR=/wormbot
+ROOT_DIR=$(cat var/root_dir)
 
 case "$1" in
 	controller)
