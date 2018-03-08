@@ -46,6 +46,9 @@ int numaligned=0;
 int numworms=0;
 int skipframes=1;
 
+stringstream root_dir;
+stringstream datapath;
+
 
 
 
@@ -620,37 +623,50 @@ string buildMovie(string filename, int startframe, int endframe){
 	stringstream lastcomp;
 
 
-	ffmpeg << "./ffmpeg -y -f image2 -start_number " << startframe <<" -i "<< filename << "aligned%06d.png ";
-	if (wormlist.size() == 0){
+	ffmpeg << "./ffmpeg -y -f image2 -start_number " << startframe
+		<<" -i "<< filename << "aligned%06d.png ";
 
-		}else {
-	for (int i=0; i < wormlist.size(); i++){
-		ffmpeg << " -i /var/www/dead.png "; //load the worm circle for each dead worm
-	}//end for each worm
-	ffmpeg << " -filter_complex \" [0:v] setpts=PTS-STARTPTS [base]; "; //load the base timelapse movie
-	int counter=1;
-	for (int i=0; i < wormlist.size(); i++){
-		ffmpeg << " [" << counter+i << ":v] setpts=PTS-STARTPTS [dead" << counter+i << "]; ";
-	}//end for each worm
-	lastcomp << "[base]";
-	     for (int i=0; i < wormlist.size(); i++){
-	    	 int start =wormlist[i].currf-startframe;
-	    	 int end = endframe - startframe;
-		     ffmpeg << lastcomp.str() << "[dead" << counter +i << "] overlay=" << wormlist[i].x -25 << ":" << wormlist[i].y -25<< ":";
-		     ffmpeg << "enable='between(n," << start << "," << end << ")' ";
-		     lastcomp.str(""); //erase the last composite title
-		     if (i+1 < wormlist.size()){
-		          lastcomp << "[tmp" << i <<"] ";
-		          ffmpeg << lastcomp.str() << ";";
-		     }
-	     }//end for each worm
-	     ffmpeg << " \"";
-	}//else there are dead worms
+	if (wormlist.size() != 0) {
+
+		for (int i=0; i < wormlist.size(); i++){
+			ffmpeg << " -i /var/www/dead.png "; //load the worm circle for each dead worm
+		}
+		//load the base timelapse movie
+		ffmpeg << " -filter_complex \" [0:v] setpts=PTS-STARTPTS [base]; "; 
+
+		int counter=1;
+		for (int i=0; i < wormlist.size(); i++){
+			ffmpeg << " [" << counter+i << ":v] setpts=PTS-STARTPTS [dead" << counter+i << "]; ";
+		}
+
+		lastcomp << "[base]";
+
+		for (int i=0; i < wormlist.size(); i++){
+
+			int start =wormlist[i].currf-startframe;
+			int end = endframe - startframe;
+
+			ffmpeg << lastcomp.str() << "[dead" << counter +i << "] overlay="
+			   << wormlist[i].x -25 << ":" << wormlist[i].y -25<< ":";
+			ffmpeg << "enable='between(n," << start << "," << end << ")' ";
+
+			lastcomp.str(""); //erase the last composite title
+
+			if (i + 1 < wormlist.size()) {
+				lastcomp << "[tmp" << i <<"] ";
+				ffmpeg << lastcomp.str() << ";";
+			}
+
+		}
+
+		ffmpeg << " \"";
+	}
+
 	ffmpeg << " -q:v 1 -vframes " << (endframe+1)-startframe << " " << filename << expID <<".avi 2>&1 | tee /var/www/robot_data/ffmpegstdout.txt" << endl;
 
 	system(ffmpeg.str().c_str());
 
-	ofstream ofile("/var/www/robot_data/tempffmpegcomand");
+	ofstream ofile(datapath.str() + "/tempffmpegcomand");
 	ofile << ffmpeg.str() <<endl;
 	ofile.close();
 
@@ -680,73 +696,69 @@ string getCurrframe(void){
 
 
 
-int main(int argc, char **argv)
-{
-	     int mapx;
-		 int mapy;
+int main(int argc, char **argv) {
 
-		 mapx=atoi(cgi("mappy.x").c_str());
-		 mapy=atoi(cgi("mappy.y").c_str());
-		 cout << HTTPHTMLHeader() << endl;
- 	 	cout << html() << head(title("Kaeberlein Lab Worm Lifespan maker")) << endl;
-		 processStartForm();
-		 stringstream ss;
-		 ss << fulldirectory << "wormlist.csv";
-		 if (mapx != 0 && mapy !=0 ) addWorm(mapx,mapy, currframe, ss.str());
-		 deleteWorms(ss.str());
-		 loadWorms(ss.str());
-		 readDirectory();
-		 processControlPanel();
-		 //buildMovie(fulldirectory,0,300);
+	ifstream t("var/root_dir");
+	root_dir << t.rdbuf();
 
+	ifstream t2(root_dir.str() + "/data_path");
+	datapath << t2.rdbuf();
 
+	int mapx;
+	int mapy;
 
+	mapx=atoi(cgi("mappy.x").c_str());
+	mapy=atoi(cgi("mappy.y").c_str());
+	cout << HTTPHTMLHeader() << endl;
+ 	cout << html() << head(title("Kaeberlein Lab Worm Lifespan maker")) << endl;
+	processStartForm();
+	stringstream ss;
+	ss << fulldirectory << "wormlist.csv";
 
+	if (mapx != 0 && mapy !=0 )
+		addWorm(mapx,mapy, currframe, ss.str());
+
+	deleteWorms(ss.str());
+	loadWorms(ss.str());
+	readDirectory();
+	processControlPanel();
+
+	//buildMovie(fulldirectory,0,300);
 
 	cout << "<style type =text/css> "<< endl;
-	          cout << " a:link {display:inline-block;background-color:#ff0000; color:white; padding:10px,10px; }" <<endl;
-		      cout << ".body { background-color:black;}" <<endl;
-		      cout << ".under { position:absolute; left:0px; top:0px; z-index:0;}" <<endl;
-		      printWormDivs();
-		      cout << ".controlpanel { font-weight:bold;position:absolute; left:0px; top:0px; z-index:1; color:white;width:300px;font-size:0.75em;}" << endl;
-		      cout << ".wormlist { position:absolute; left:1525px; top:0px; width:300px; height:600px; background-color:#808080; z-index:2; color:white; overflow:auto;}" << endl;
-		      //cout <<
-		      	      cout << "</style>";
-		      	      cout << "<body class=\"body\">" << endl;
+	cout << " a:link {display:inline-block;background-color:#ff0000; color:white; padding:10px,10px; }" <<endl;
+	cout << ".body { background-color:black;}" <<endl;
+	cout << ".under { position:absolute; left:0px; top:0px; z-index:0;}" <<endl;
 
+	printWormDivs();
 
+	cout << ".controlpanel { font-weight:bold;position:absolute; left:0px; top:0px; z-index:1; color:white;width:300px;font-size:0.75em;}" << endl;
+	cout << ".wormlist { position:absolute; left:1525px; top:0px; width:300px; height:600px; background-color:#808080; z-index:2; color:white; overflow:auto;}" << endl;
+	cout << "</style>";
+	cout << "<body class=\"body\">" << endl;
 
+	// Set up the HTML document
+	cout << "<form action=\"/cgi-bin/imagealigner\">" << endl;
+	cout << "<input type=\"hidden\" name=\"loadedexpID\" value=\"" << expID << "\"> " << endl;
+    printWormImgs();
+	cout << "<input type=\"image\" src=\"" << getCurrframe() << "\" class=\"under\" name=\"mappy\">" << endl;
+    cout << "<input type=\"image\" name=\"cpan\" src=\"/CONTROL.png\" class=\"controlpanel\">" << endl;
 
+    cout << "<div class=\"controlpanel\" >" << endl;
+	//cout << cgi("mappy.x") <<endl;
+	//cout << cgi("mappy.y") <<endl;
+	cout << "current frame: " << currframe << "<br>" << endl;
+	cout << "total frames: " << numframes << "<br>" << endl;
+	stringstream dss;
+	dss << fulldirectory << "description.txt";
+	cout << getDescription(dss.str());
+    cout << "Start Frame: <input type=\"text\" name=\"moviestartframe\" size=4> <br> "<< endl;
+    cout << "  End Frame: <input type=\"text\" name=\"movieendframe\" size=4> <br> "<< endl;
+    cout << "Frame skip: <input type=\"text\" name=\"frameskip\" size=4 value=\"" << skipframes << "\"><br> "<< endl;
+    cout << "<h3><a href=\"" << directory << expID << ".avi\" > Current movie </a>" << "</h3><br>" <<endl;
+	cout << "</div>" << endl;
+	printWormForm();
 
-	      // Set up the HTML document
-
-
-
-
-
-
-	      cout << "<form action=\"/cgi-bin/imagealigner\">" << endl;
-	      cout << "<input type=\"hidden\" name=\"loadedexpID\" value=\"" << expID << "\"> " << endl;
-          printWormImgs();
-	      cout << "<input type=\"image\" src=\"" << getCurrframe() << "\" class=\"under\" name=\"mappy\">" << endl;
-          cout << "<input type=\"image\" name=\"cpan\" src=\"/CONTROL.png\" class=\"controlpanel\">" << endl;
-
-          cout << "<div class=\"controlpanel\" >" << endl;
-		 // cout << cgi("mappy.x") <<endl;
-		  //cout << cgi("mappy.y") <<endl;
-		  cout << "current frame: " << currframe << "<br>" << endl;
-		  cout << "total frames: " << numframes << "<br>" << endl;
-		  stringstream dss;
-		  dss << fulldirectory << "description.txt";
-		  cout << getDescription(dss.str());
-          cout << "Start Frame: <input type=\"text\" name=\"moviestartframe\" size=4> <br> "<< endl;
-          cout << "  End Frame: <input type=\"text\" name=\"movieendframe\" size=4> <br> "<< endl;
-          cout << "Frame skip: <input type=\"text\" name=\"frameskip\" size=4 value=\"" << skipframes << "\"><br> "<< endl;
-          cout << "<h3><a href=\"" << directory << expID << ".avi\" > Current movie </a>" << "</h3><br>" <<endl;
-		  cout << "</div>" << endl;
-		  printWormForm();
-
-
-	      cout << "</body></html>" << endl;
+	cout << "</body></html>" << endl;
 	return 0;
 }

@@ -32,24 +32,23 @@ using namespace cgicc;
 Cgicc cgi;
 string datapath;
 
- struct XYpair{
+struct XYpair{
 	int x;
 	int y;
 };
 
- struct wellSort{
-	 int rank;
-	 string welldataline;
+struct wellSort{
+	int rank;
+	string welldataline;
 
-	 bool operator < (const wellSort str) const
-	     {
-	         return (rank < str.rank);
-	     }
- };
+	bool operator < (const wellSort str) const {
+		return (rank < str.rank);
+	}
+};
 
 void sortJobList(void);
 
-XYpair getXYpair(string queryline){
+XYpair getXYpair(string queryline) {
 	string filename;
 	filename = datapath + string("platecoordinates.dat");
 	ifstream ifile(filename.c_str());
@@ -59,38 +58,39 @@ XYpair getXYpair(string queryline){
 	found.y=0;
 	string token;
 
-	while (getline(ifile,readline)){
-		if (readline.find(queryline) != std::string::npos){
+	while (getline(ifile,readline)) {
+		if (readline.find(queryline) != std::string::npos) {
 			stringstream isis(readline);
 			getline(isis, token, ','); //remove wellname
 			getline(isis, token, ','); //get x
 			found.x = atoi(token.c_str());
 			getline(isis, token, ','); //get y
 			found.y = atoi(token.c_str());
+
 			return(found);
-
-		}//end if found the well
-	}//end while lines in the file
+		}
+	}
 	return(found);
-}//end getXYpair
+}
 
-long getNewExpID(void){
-		int fetchID;
-		long expID;
-		string filename;
-		filename = datapath + string("currexpid.dat");
-		ifstream ifile(filename.c_str());
-		ifile >> expID;
-		expID++;
-		ifile.close();
-		ofstream ofile(filename.c_str());
-		ofile << expID << endl;
-		ofile.close();
-		return (expID);
+long getNewExpID(void) {
+	int fetchID;
+	long expID;
 
+	string filename;
+	filename = datapath + string("currexpid.dat");
 
-	}//end get new ID
+	ifstream ifile(filename.c_str());
+	ifile >> expID;
+	expID++;
+	ifile.close();
 
+	ofstream ofile(filename.c_str());
+	ofile << expID << endl;
+	ofile.close();
+
+	return (expID);
+}
 
 
 vector<int> readOpenPlates(void){
@@ -553,76 +553,70 @@ string buildInputField(vector<int> openplates){
 
 }//end buildInputFields
 
-int
-main(int argc,
-     char **argv)
-{
-   try {
 
-	  ifstream readpath("data_path");
-	  readpath >> datapath;
-      // Send HTTP header
-      cout << HTTPHTMLHeader() << endl;
+int main(int argc, char **argv) {
+	try {
 
-      // Set up the HTML document
-      cout << html() << head(title("WormBot Scheduler")) << endl;
-      cout << body() << endl;
+		ifstream readpath("data_path");
+		readpath >> datapath;
+		// Send HTTP header
+		cout << HTTPHTMLHeader() << endl;
 
-      cout << img().set("src","http://kaeberleinlab.org/images/kaeberlein-lab-logo-2.png") << endl;
-      cout << br() <<endl;
-      cout << "ROBOT SCHEDULER";
-      cout << img().set("src", "/robot_data/Bender.png").set("width","100") << endl;
-      cout << br() <<endl;
-      cout << form().set("action", "/cgi-bin/roboscheduler").set("method", "POST") << endl;
+		// Set up the HTML document
+		cout << html() << head(title("WormBot Scheduler")) << endl;
+		cout << body() << endl;
 
-      processDeletes();
-      processInput();
-      //sortJobList();
+		cout << img().set("src","http://kaeberleinlab.org/images/kaeberlein-lab-logo-2.png") << endl;
+		cout << br() <<endl;
+		cout << "ROBOT SCHEDULER";
+		cout << img().set("src", "/wormbot/img/Bender.png").set("width","100") << endl;
+		cout << br() <<endl;
+		cout << form().set("action", "/cgi-bin/roboscheduler").set("method", "POST") << endl;
+
+		processDeletes();
+		processInput();
+		//sortJobList();
 
 
-      vector<int> openplates;
-      openplates = readOpenPlates();
-      cout << hr()<< h3("Open plate slots: ");
-      for (vector<int>::iterator citer = openplates.begin(); citer != openplates.end(); citer++){
-           cout << (*citer) << ", ";
-      }//end for openplates
-      cout << br() <<endl;
+		vector<int> openplates;
+		openplates = readOpenPlates();
+		cout << hr()<< h3("Open plate slots: ");
 
-      cout << h2("Add a plate") << br() << "Select plate slot: " << br() <<endl;
+		for (vector<int>::iterator citer = openplates.begin(); citer != openplates.end(); citer++){
+			 cout << (*citer) << ", ";
+		}
+		cout << br() <<endl;
 
-    	  cout << buildInputField(openplates) << br() << br() << endl;
+		cout << h2("Add a plate") << br() << "Select plate slot: " << br() << endl;
 
+		cout << buildInputField(openplates) << br() << br() << endl;
 
+		string plateformloc;
+		plateformloc =  datapath + string("plateform.html");
+		ifstream plateform(plateformloc.c_str());
+		string formline;
+		stringstream ss;
 
+		cout << "<div style=\"height:200px;color:white;background-color:darkolivegreen;border:1px solid#ccc; overflow:auto;\">" << endl;
 
-          string plateformloc;
-          plateformloc =  datapath + string("plateform.html");
-    	  ifstream plateform(plateformloc.c_str());
-    	  string formline;
-          stringstream ss;
+		while (getline(plateform,formline)){
+			ss << formline;
+        }
+    	for (int i=0; i < 12; i++) {
+    		string tempr=ss.str();
+    		stringstream number;
+    		number << i;
+    		boost::replace_all(tempr, "XXX", number.str());
+    		cout << tempr << hr()<<endl;
+        }
 
-          cout << "<div style=\"height:200px;color:white;background-color:darkolivegreen;border:1px solid#ccc; overflow:auto;\">" << endl;
+		cout << "</div>" << endl;
+		cout << "<input type=\"submit\" value=\"Update Robot\"> <input type=\"reset\" value=\"clear form\">" << endl;
+		cout << "</form>" << endl;
+		// Close the HTML document
+		cout << body() << html();
 
-    	  while (getline(plateform,formline)){
-
-    	    ss << formline;
-         }//end while lines in plateform
-    	  for (int i=0; i < 12; i++){
-    		  string tempr=ss.str();
-    		  stringstream number;
-    		  number << i;
-    		  boost::replace_all(tempr, "XXX", number.str());
-    		  cout << tempr << hr()<<endl;
-          }
-
-
-      cout << "</div>" << endl;
-      cout << "<input type=\"submit\" value=\"Update Robot\"> <input type=\"reset\" value=\"clear form\">" << endl;
-      cout << "</form>" << endl;
-      // Close the HTML document
-      cout << body() << html();
-   }//end if try cgi
-   catch(exception& e) {
-      // handle any errors - omitted for brevity
-   }
+	} catch(exception& e) {
+		// handle any errors - omitted for brevity
+	}
 }

@@ -33,9 +33,10 @@ using namespace boost;
 
 
 string directory("");
+stringstream root_dir;
 
 string currfilename;
-ofstream logfile("/disk1/robot_data/alignerd.log", ofstream::app);
+ofstream logfile(root_dir.str() + "alignerd.log", ofstream::app);
 streambuf *coutbuf = std::cout.rdbuf(); //save old buf
 
 
@@ -399,6 +400,8 @@ void readDirectory(string fulldirectory){
 
 
 int main(int argc, char **argv) {
+	ifstream t("var/root_dir");
+	root_dir << t.rdbuf();
 
 	cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
 
@@ -406,24 +409,18 @@ int main(int argc, char **argv) {
 	Timer mytimer;
 	string standardfile;
 	if (argc < 1) {
-		standardfile = "/disk1/robot_data";
-
+		standardfile = root_dir.str() + "/experiments";
 	} else {
 		standardfile = argv[1];
 	}
 
 	daemon(0,1);
 
-	while (1){
-
+	while (true) {
 		mytimer.startTimer((long)DELAY_TIME);
-
 	    scanRobotDir(standardfile);
-
 	    while(!mytimer.checkTimer());  ///wait
-
-
-	}//go forever
+	}
 
     exit(EXIT_SUCCESS);
 

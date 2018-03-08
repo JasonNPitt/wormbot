@@ -85,10 +85,12 @@ using namespace std;
 
 //GLOBALS
 
+stringstream root_dir;
+
 SerialStream ardu;
 string datapath;
 int cameranum;
-ofstream logfile("/disk1/robot_data/robot.log", ofstream::app);
+ofstream logfile(root_dir.str() + "/robot.log", ofstream::app);
 streambuf *coutbuf = std::cout.rdbuf(); //save old buf
 
 
@@ -365,7 +367,7 @@ public:
 		vector<string> wellorder;
 
 		string filename;
-		filename = datapath + string("platecoordinates.dat");
+		filename = root_dir.str() + string("/platecoordinates.dat");
 		ifstream ifile(filename.c_str());
 		string readline;
 
@@ -933,14 +935,14 @@ void syncWithJoblist(bool init = false) {
 
 
 void writeToLog(string logline){
-	ofstream ofile("/disk1/runlog", std::ofstream::app);
+	ofstream ofile(root_dir.str() + "/runlog", std::ofstream::app);
 	ofile << logline << endl;
 	ofile.close();
 }
 
 
 void eraseLog(void){
-	ofstream ofile("/disk1/runlog");
+	ofstream ofile(root_dir.str() + "/runlog");
 	ofile << "start log" <<endl;
 	ofile.close();
 }
@@ -949,12 +951,16 @@ void eraseLog(void){
 
 int main(int argc, char** argv) {
 
+	ifstream t("var/root_dir");
+	root_dir << t.rdbuf();
+
 	bool skipIntro = true;
 
 	if (!skipIntro) {
 		raiseBeep(10);
 		chordBeep(1);
-		system("cd /disk1/robot_data; ./play.sh mario.song");
+		string msg = "cd " + root_dir.str() + "; ./play.sh mario.song";
+		system(msg.c_str());
 	}
 
 	cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
@@ -966,7 +972,7 @@ int main(int argc, char** argv) {
 	string machineMax("LL");
 	string machineRestX("MX150");
 	string machineRestY("MY150");
-	ifstream readpath("data_path");
+	ifstream readpath("var/datapath");
 	readpath >> datapath;
 	cout << "OpenCV " << CV_MAJOR_VERSION << "." << CV_MINOR_VERSION << endl;
 	string arduinoport(PORT);
