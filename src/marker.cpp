@@ -666,7 +666,8 @@ string buildMovie(string filename, int startframe, int endframe){
 
 	system(ffmpeg.str().c_str());
 
-	ofstream ofile(datapath.str() + "/tempffmpegcomand");
+	string fn = datapath.str() + "/tempffmpegcomand";
+	ofstream ofile(fn.c_str());
 	ofile << ffmpeg.str() <<endl;
 	ofile.close();
 
@@ -701,7 +702,8 @@ int main(int argc, char **argv) {
 	ifstream t("var/root_dir");
 	root_dir << t.rdbuf();
 
-	ifstream t2(root_dir.str() + "/data_path");
+	string fn = root_dir.str() + "/data_path";
+	ifstream t2(fn.c_str());
 	datapath << t2.rdbuf();
 
 	int mapx;

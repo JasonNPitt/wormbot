@@ -80,8 +80,6 @@ using namespace LibSerial;
 #define SECONDS_IN_DAY 86400
 #define SECONDS_IN_HOUR 3600
 
-using namespace std;
-
 
 //GLOBALS
 
@@ -90,7 +88,8 @@ stringstream root_dir;
 SerialStream ardu;
 string datapath;
 int cameranum;
-ofstream logfile(root_dir.str() + "/robot.log", ofstream::app);
+string logfilename = root_dir.str() + "/robot.log";
+ofstream logfile(logfilename.c_str(), ofstream::app);
 streambuf *coutbuf = std::cout.rdbuf(); //save old buf
 
 
@@ -305,7 +304,6 @@ public:
 			starttime = t_stat.st_mtime;
 		}
 
-		cout << "h0" << endl;
 		string torank = boost::lexical_cast<string>(plate) + wellname;
 		rank = getRank(torank);
 
@@ -792,7 +790,7 @@ string fdGetFile(int fd) {
 
 int checkJoblistUpdate(void) {
 
-	string filename = datapath + "RRRjoblist.csv";
+	string filename = datapath + "/RRRjoblist.csv";
 	//cout << "  opening " << filename.c_str() << endl;
 	int fd = open (filename.c_str(), O_RDONLY);
 
@@ -830,7 +828,8 @@ int checkJoblistUpdate(void) {
 // @param init indicates we've just turned on the robot with true
 void syncWithJoblist(bool init = false) {
 
-	string filename = datapath + "RRRjoblist.csv";
+	string filename = datapath + "/RRRjoblist.csv";
+	cout << filename << endl;
 	int fd = open(filename.c_str(), O_RDONLY);
 
 	if (fd == -1) {
@@ -935,14 +934,16 @@ void syncWithJoblist(bool init = false) {
 
 
 void writeToLog(string logline){
-	ofstream ofile(root_dir.str() + "/runlog", std::ofstream::app);
+	string fn = root_dir.str() + "/runlog";
+	ofstream ofile(fn.c_str(), std::ofstream::app);
 	ofile << logline << endl;
 	ofile.close();
 }
 
 
 void eraseLog(void){
-	ofstream ofile(root_dir.str() + "/runlog");
+	string fn = root_dir.str() + "/runlog";
+	ofstream ofile(fn.c_str());
 	ofile << "start log" <<endl;
 	ofile.close();
 }
@@ -950,6 +951,11 @@ void eraseLog(void){
 
 
 int main(int argc, char** argv) {
+
+	datapath = "/var/www/wormbot/experiments";
+
+	// testing
+	//syncWithJoblist(true);
 
 	ifstream t("var/root_dir");
 	root_dir << t.rdbuf();
@@ -963,8 +969,8 @@ int main(int argc, char** argv) {
 		system(msg.c_str());
 	}
 
-	cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
-	daemon(0,1);
+	//cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
+	//daemon(0,1);
 
 	string read;
 	string camera;
@@ -972,8 +978,8 @@ int main(int argc, char** argv) {
 	string machineMax("LL");
 	string machineRestX("MX150");
 	string machineRestY("MY150");
-	ifstream readpath("var/datapath");
-	readpath >> datapath;
+	//ifstream readpath("var/datapath");
+	//readpath >> datapath;
 	cout << "OpenCV " << CV_MAJOR_VERSION << "." << CV_MINOR_VERSION << endl;
 	string arduinoport(PORT);
 	eraseLog();
@@ -985,7 +991,7 @@ int main(int argc, char** argv) {
 
 	cout << "setting camera parameters \n";
 	camera = setupCamera();
-	cameranum = boost::lexical_cast<int>(camera[camera.length() - 1]);
+	cameranum = boost::lexical_cast<int>((int) camera[camera.length() - 1]);
 	cout << "camera number:" << cameranum << " " << camera << endl;
 
 

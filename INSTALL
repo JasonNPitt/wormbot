@@ -3,9 +3,9 @@
 # save working directory
 WD=$(pwd)
 
-#sudo apt install git cmake libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev ubuntu-restricted-extras libcgicc5-dev libboost-dev apache2 libserial-dev
-## maybe libcgicc3?????
-#
+sudo apt install git cmake libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev ubuntu-restricted-extras libcgicc5-dev libboost-dev apache2 libserial-dev
+# maybe libcgicc3?????
+
 ## ffmpeg
 #cd ~
 #wget http://ffmpeg.org/releases/ffmpeg-3.4.tar.bz2
@@ -31,11 +31,11 @@ WD=$(pwd)
 #sudo make install
 #cd ~
 ##rm -rf opencv-3.3.0
-#
-## enable cgi-bin with apache
-#sudo a2enmod cgi
-#sudo service apache2 restart
-#
+
+# enable cgi-bin with apache
+sudo a2enmod cgi
+sudo service apache2 restart
+
 ## libserial
 ##git clone https://github.com/crayzeewulf/libserial.git
 #

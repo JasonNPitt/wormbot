@@ -27,6 +27,7 @@ using namespace cgicc;
 //globals
 Cgicc cgi;
 string datapath;
+string web_dir = "/var/www/wormbot";
 
 
 int main(int argc, char **argv) {
@@ -99,8 +100,8 @@ int main(int argc, char **argv) {
     	  cout << "    <td><a href=\"/cgi-bin/imagealigner?loadedexpID=" << i << "\" target=\"_blank\">" << num_worms << "</a></td>" << endl;
 
     	  // create buttons for deleting and downloading this experiment's data
-    	  cout << "    <td><button type=\"button\" onclick=\"deleteExp()\"><img src=\"icon_delete.png\"</button></td>" << endl;
-    	  cout << "    <td><button type=\"button\" onclick=\"downloadExp()\"><img src=\"icon_download.png\"</button></td>" << endl;
+    	  cout << "    <td><button type=\"button\" onclick=\"deleteExp()\"><img src=\"/wormbot/img/icon_delete.png\"</button></td>" << endl;
+    	  cout << "    <td><button type=\"button\" onclick=\"downloadExp()\"><img src=\"/wormbot/img/icon_download.png\"</button></td>" << endl;
 
     	  // end this table row
     	  cout << "  </tr>" << endl;

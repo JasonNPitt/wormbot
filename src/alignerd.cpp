@@ -36,7 +36,8 @@ string directory("");
 stringstream root_dir;
 
 string currfilename;
-ofstream logfile(root_dir.str() + "alignerd.log", ofstream::app);
+string fn = root_dir.str() + "alignerd.log";
+ofstream logfile(fn.c_str(), ofstream::app);
 streambuf *coutbuf = std::cout.rdbuf(); //save old buf
 
 

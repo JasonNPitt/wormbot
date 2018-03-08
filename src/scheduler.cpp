@@ -453,7 +453,7 @@ void processInput(void){
 			oss << thisxy.y << ",";
 			string makedir;
 			//expID and datapath is not read from form it is safe for system
-			makedir = string("mkdir ") + datapath + boost::lexical_cast<string>(expID);
+			makedir = string("mkdir ") + datapath + "/experiments/" + boost::lexical_cast<string>(expID);
 			system(makedir.c_str()); //make the directory  ...should probably add error checking here
 			oss << datapath << expID <<"/,"; //print the directory
 			namevalue="";
@@ -571,7 +571,7 @@ int main(int argc, char **argv) {
 		cout << "ROBOT SCHEDULER";
 		cout << img().set("src", "/wormbot/img/Bender.png").set("width","100") << endl;
 		cout << br() <<endl;
-		cout << form().set("action", "/cgi-bin/roboscheduler").set("method", "POST") << endl;
+		cout << form().set("action", "/cgi-bin/scheduler").set("method", "POST") << endl;
 
 		processDeletes();
 		processInput();
@@ -592,7 +592,7 @@ int main(int argc, char **argv) {
 		cout << buildInputField(openplates) << br() << br() << endl;
 
 		string plateformloc;
-		plateformloc =  datapath + string("plateform.html");
+		plateformloc = string("/var/www/wormbot/plateform.html");
 		ifstream plateform(plateformloc.c_str());
 		string formline;
 		stringstream ss;

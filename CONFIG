@@ -4,7 +4,7 @@
 # save working directory
 WD=(pwd)
 
-TESTING=true
+TESTING=false
 
 
 # define constants
@@ -28,13 +28,17 @@ fi
 sudo mkdir $ROOT_DIR
 sudo mkdir $ROOT_DIR/experiments
 sudo mkdir $WEB_DIR
-sudo ln --symbolic -T $ROOT_DIR/experiments $WEB_DIR/experiments
+sudo ln --symbolic -T $ROOT_DIR $WEB_DIR
+#sudo ln --symbolic -T $ROOT_DIR/experiments $WEB_DIR/experiments
+sudo ln --symbolic -T $WEB_DIR /var/www/html/wormbot
 sudo chmod a+r $WEB_DIR/experiments
+sudo echo ,,,,,,, > $ROOT_DIR/RRRjoblist.csv
+sudo chmod a+rw $ROOT_DIR/RRRjoblist.csv
 
 
 # move necessary files to root dir
 sudo cp camera.config platecoordinates.dat bin/alignerd bin/controller $ROOT_DIR
-sudo echo 0 > $ROOT_DIR/experiments/currexpid.dat
+sudo echo 0 > $ROOT_DIR/currexpid.dat
 
 
 # move necessary files to web dir
@@ -50,8 +54,12 @@ sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler /usr/lib/cgi-bi
 sudo cp bin/wormbot /bin
 
 
-if [ $TESTING ]
+if $TESTING ;
 then
+	echo testing
 	cp -r test_data/* $ROOT_DIR/experiments
-	sudo chmod -R a+r $WEB_DIR/experiments
+	sudo echo 1 > $ROOT_DIR/experiments/currexpid.dat
 fi
+
+
+sudo chmod -R +rw $WEB_DIR
