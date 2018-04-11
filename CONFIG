@@ -1,11 +1,10 @@
 #!/bin/bash
 
+TESTING=false
+
 
 # save working directory
 WD=(pwd)
-
-TESTING=false
-
 
 # define constants
 ROOT_DIR=$(cat var/root_dir)
