@@ -62,3 +62,5 @@ fi
 
 
 sudo chmod -R +rw $WEB_DIR
+
+sudo cp retrograde/ /var/www/html/
