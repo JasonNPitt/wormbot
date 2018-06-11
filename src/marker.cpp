@@ -712,7 +712,7 @@ int main(int argc, char **argv) {
 	mapx=atoi(cgi("mappy.x").c_str());
 	mapy=atoi(cgi("mappy.y").c_str());
 	cout << HTTPHTMLHeader() << endl;
- 	cout << html() << head(title("Kaeberlein Lab Worm Lifespan maker")) << endl;
+ 	cout << html() << head(title("WormBot Lifespan Editor")) << endl;
 	processStartForm();
 	stringstream ss;
 	ss << fulldirectory << "wormlist.csv";
