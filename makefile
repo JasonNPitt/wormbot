@@ -27,7 +27,13 @@ marker: src/marker.cpp
 scheduler: src/scheduler.cpp
 	$(CXX) $(CFLAGS) src/scheduler.cpp -lcgicc -o bin/scheduler
 
-all: alignerd controller experimentbrowser marker scheduler
+cgiccretro: src/cgiccretro.cpp
+	$(CXX) $(CFLAGS) src/cgiccretro.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/cgiccretro
+
+wormlistupdater: src/wormlistupdater.cpp
+	$(CXX) $(CFLAGS) src/wormlistupdater.cpp $(LIB) -lcgicc -o bin/wormlistupdater
+
+all: alignerd controller experimentbrowser marker scheduler cgiccretro
 
 clean:
 	rm bin/*
