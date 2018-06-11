@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TESTING=true
+TESTING=false
 
 # save working directory
 WD=$(pwd)
