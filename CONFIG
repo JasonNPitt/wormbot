@@ -29,7 +29,7 @@ sudo mkdir $ROOT_DIR/experiments
 #sudo mkdir $WEB_DIR
 sudo ln --symbolic $ROOT_DIR $WEB_DIR
 #sudo ln --symbolic -T $ROOT_DIR/experiments $WEB_DIR/experiments
-sudo ln --symbolic $WEB_DIR /var/www/html/wormbot
+#sudo ln --symbolic $WEB_DIR /var/www/html/wormbot
 sudo chmod a+r $WEB_DIR/experiments
 sudo echo ,,,,,,, > $ROOT_DIR/RRRjoblist.csv
 sudo chmod a+rw $ROOT_DIR/RRRjoblist.csv
