@@ -275,6 +275,17 @@ function getMousePos(canvas, evt){
 
 
 
+function popContourPreview() {
+   var contourImage = document.getElementById('contourImage');
+   contourImage.style.display = 'block';
+   contourImage.style.width=1920+"px";
+   contourImage.style.height=1080+"px";
+   var url= "/robot_data/" + expID + "/current_contrast.png" ;
+   window.open(url,'Image','width=contourImage.stylewidth,height=contourImage.style.height,resizable=1');
+}
+
+
+
 function deleteObject(x,y){
 	//scan through objects and delete them if found to have middle clicked on them
 	var i=0;
@@ -642,6 +653,8 @@ $("#canvas").mouseout(function (e) {
    // }], "*")
   //}
 </script>
+
+<a href='javascript:;' onclick='popContourPreview();'>Preview contour</a>
 <form action="" method="post" id = "updateForm">
 Movie Start<input type="text" id = "startmovie" name="moviestart"> | Movie End<input type="text" id="stopmovie" name="moviestop"> | Check to build new movie<input type="checkbox" id="buildMovie" name="buildMovie"> </form>
 </body>
