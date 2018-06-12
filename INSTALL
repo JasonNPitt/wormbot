@@ -5,7 +5,7 @@ TESTING=false
 # save working directory
 WD=$(pwd)
 
-sudo apt install git cmake libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev ubuntu-restricted-extras libcgicc5-dev libboost-dev apache2 libserial-dev
+sudo apt --assume-yes install git cmake libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev ubuntu-restricted-extras libcgicc5-dev libboost-dev apache2 libserial-dev
 # maybe libcgicc3?????
 
 # skip big installs if testing
@@ -48,4 +48,5 @@ sudo service apache2 restart
 #sudo ldconfig -v
 
 # configure directories and all that shit
-$WD/CONFIG
+cd $WD
+sudo ./CONFIG
