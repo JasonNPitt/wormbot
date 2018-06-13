@@ -276,12 +276,9 @@ function getMousePos(canvas, evt){
 
 
 function popContourPreview() {
-   var contourImage = document.getElementById('contourImage');
-   contourImage.style.display = 'block';
-   contourImage.style.width=1920+"px";
-   contourImage.style.height=1080+"px";
-   var url= "/robot_data/" + expID + "/current_contrast.png" ;
-   window.open(url,'Image','width=contourImage.stylewidth,height=contourImage.style.height,resizable=1');
+   var rnum = Math.random();
+   var url= "/robot_data/" + expID + "/current_contrast.png?v=" +  rnum ;
+   window.open(url,'Image','width=1920,height=1080,resizable=1');
 }
 
 
@@ -322,12 +319,12 @@ function deleteObject(x,y){
 function makeDataPanel(){
 	 var leftDiv = document.createElement("div"); //Create left div
         leftDiv.id = "left"; //Assign div id
-        leftDiv.setAttribute("style", "float:right; width:25%; line-height: 26px; text-align:left; font-size:16pt; padding-left:8px; height:26px;"); 
+        leftDiv.setAttribute("style", "float:left; width:25%; line-height: 26px; text-align:left; font-size:16pt; padding-left:8px; height:26px;"); 
         leftDiv.style.background =  "#999999";
 
 	 var leftDiv2 = document.createElement("div"); //Create left div
         leftDiv2.id = "left"; //Assign div id
-        leftDiv2.setAttribute("style", "float:right; width:25%; line-height: 26px; text-align:left; font-size:16pt; padding-left:8px; height:26px;"); 
+        leftDiv2.setAttribute("style", "float:left; width:25%; line-height: 26px; text-align:left; font-size:16pt; padding-left:8px; height:26px;"); 
         leftDiv2.style.background =  "#CCCCCC";
 
         a = document.createElement('a');
@@ -396,7 +393,7 @@ body.appendChild(delBtn);
 body.appendChild(lifespanBtn);
 body.appendChild(gotoBtn);
 
-makeDataPanel()
+
 
 delBtn.addEventListener("click", function(){
 	var deadwormsstring = JSON.stringify(deadworms);
@@ -405,12 +402,18 @@ delBtn.addEventListener("click", function(){
 	var startmovie = formData.get('moviestart');
 	var stopmovie = formData.get('moviestop');
 	var checkboxbuildmovie = formData.get('buildMovie');
+	highthresh = formData.get('upperthresh');
+	lowthresh = formData.get('lowerthresh');
+	var checkboxUpdateContours = formData.get('updatecontours');
 
 
 	$.ajax({
                 	type : "POST",
                 	url  : "/cgi-bin/wormlistupdater",
-                	data : { "deadworms" : deadwormsstring, "expID": expID,"startmovie":startmovie, "stopmovie":stopmovie, "buildMovie":checkboxbuildmovie},
+                	data : { "deadworms" : deadwormsstring, "expID": 			 					expID,"startmovie":startmovie, "stopmovie":stopmovie, 
+				"buildMovie":checkboxbuildmovie, "highthresh":highthresh,
+				"lowthresh":lowthresh, 					"checkboxUpdateContours":checkboxUpdateContours,
+				"currframe":framenumber},
                 	success : function (){
 
                     	//alert(data);
@@ -452,6 +455,8 @@ lifespanBtn.addEventListener("click", function(){
 
 }//end function
 );
+
+makeDataPanel();
 
 
 // get references to the canvas and context
@@ -656,7 +661,7 @@ $("#canvas").mouseout(function (e) {
 
 <a href='javascript:;' onclick='popContourPreview();'>Preview contour</a>
 <form action="" method="post" id = "updateForm">
-Movie Start<input type="text" id = "startmovie" name="moviestart"> | Movie End<input type="text" id="stopmovie" name="moviestop"> | Check to build new movie<input type="checkbox" id="buildMovie" name="buildMovie"> </form>
+Movie Start<input type="text" id = "startmovie" name="moviestart"> | Movie End<input type="text" id="stopmovie" name="moviestop"> | Check to build new movie<input type="checkbox" id="buildMovie" name="buildMovie"> <br>Lower threshold<input type="text" id = "lowerthresh" name="lowerthresh"> | Upper Threshold<input type="text" id="upperthresh" name="upperthresh"> | Check to update contour thresholds<input type="checkbox" id="updatecontours" name="updatecontours"></form>
 </body>
 
 </html>

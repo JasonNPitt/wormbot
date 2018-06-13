@@ -25,13 +25,33 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
+//openCV
+#include <opencv2/opencv.hpp>
+#include <opencv/cv.hpp>
+#include <opencv2/videoio.hpp>
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/core/core.hpp"
+
+
 
 //namespace
 using namespace std;
 using namespace cgicc;
+using namespace cv;
+
 using boost::property_tree::ptree;
 using boost::property_tree::read_json;
 using boost::property_tree::write_json;
+
+
+const Scalar SCALAR_BLACK = Scalar(0.0,0.0,0.0);
+const Scalar SCALAR_WHITE = Scalar(255.0,255.0,255.0);
+const Scalar SCALAR_BLUE = Scalar(255.0,0.0,0.0);
+const Scalar SCALAR_GREEN = Scalar(0.0,255.0,0.0);
+const Scalar SCALAR_RED = Scalar(0.0,0.0,255.0);
+
 
 //Globals
 int expID;
@@ -294,6 +314,44 @@ vector <Worm> wormlist;
 
 
 
+
+//make an updated current_contour.png
+void Update_Contours(string filename, int lowthresh, int highthresh){
+
+
+							Mat canny_output;
+							Mat inputImg;
+							inputImg = imread(filename.c_str());
+
+							vector<vector<Point> > contours;
+							vector<Vec4i> hierarchy;
+							blur( inputImg, inputImg, Size(3,3) );
+							Canny( inputImg, canny_output, lowthresh, highthresh, 3 );
+							findContours( canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0) );
+							Mat drawing = (Mat::zeros( canny_output.size(), CV_8UC1 ));
+
+							for( size_t j = 0; j< contours.size(); j++ )
+								 {
+								  double length=arcLength(contours[j], true);
+								  Rect boundRect=boundingRect(contours[j]);
+
+								   Scalar color = SCALAR_WHITE;
+								   drawContours( drawing, contours, (int)j, color, 2, 8, hierarchy, 0, Point() );
+
+
+								 }
+							stringstream outfilename;
+						 	outfilename << "/disk1/robot_data/" << expID << "/current_contrast.png";
+
+						 	imwrite(outfilename.str().c_str(), drawing);
+
+
+}//end update contours
+
+
+
+
+
 //gets the lifespan based on description.txt and the frame time
 long getLifespan(string filename, long frametime){
 	ifstream ifile(filename.c_str());
@@ -475,6 +533,8 @@ int main(int argc,char **argv){
 	stringstream wormfilename;
 	 Cgicc cgi;
 	 int moviestart,moviestop=0;
+	 int highthresh,lowthresh =0;
+	 int currframe;
 
 	try {
 
@@ -483,6 +543,9 @@ int main(int argc,char **argv){
 	      expID = atoi(string(cgi("expID")).c_str());
 	      moviestart = atoi(string(cgi("startmovie")).c_str());
 	      moviestop = atoi(string(cgi("stopmovie")).c_str());
+	      highthresh = atoi(string(cgi("highthresh")).c_str());
+    	  lowthresh = atoi(string(cgi("lowthresh")).c_str());
+    	  currframe = atoi(string(cgi("currframe")).c_str());
 
 
 
@@ -541,6 +604,15 @@ int main(int argc,char **argv){
 		buildMovie(wormpath.str(),moviestart,moviestop);
 
 	}//end if want to build a new movie
+
+	if (cgi.queryCheckbox("checkboxUpdateContours")){
+		stringstream currimgfilename;
+		stringstream number;
+		number << setfill('0') << setw(6) << currframe;
+		currimgfilename << "/disk1/robot_data/" << expID << "/aligned" << number.str() << ".png";
+		Update_Contours(currimgfilename.str(),lowthresh, highthresh);
+
+	}//end if update contours
 
 
 
