@@ -323,6 +323,11 @@ void Update_Contours(string filename, int lowthresh, int highthresh){
 							Mat inputImg;
 							inputImg = imread(filename.c_str());
 
+							if (lowthresh < 0) lowthresh =0;
+							if (highthresh < 0) highthresh =0;
+							if (lowthresh > 255) lowthresh =255;
+							if (highthresh > 255) highthresh =255;
+
 							vector<vector<Point> > contours;
 							vector<Vec4i> hierarchy;
 							blur( inputImg, inputImg, Size(3,3) );
