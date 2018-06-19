@@ -564,6 +564,7 @@ main(int argc,
     	  //end find the maximum frame number
           boostfile << "4" << endl;
     	  if (v.second.get<int>("f") > max_frame) max_frame= v.second.get<int>("f");
+    	  if (v.second.get<int>("w") <=0 || v.second.get<int>("h") <= 0) continue;
     	  WormRegion thisworm(v.second.get<int>("x"),v.second.get<int>("y"),v.second.get<int>("w"),v.second.get<int>("h"),v.second.get<int>("f"),v.second.get<int>("name"));
     	  worms.push_back(thisworm);
       }//end boostforeach
