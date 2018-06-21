@@ -328,12 +328,13 @@ function makeDataPanel(){
         leftDiv2.style.background =  "#CCCCCC";
 
         a = document.createElement('a');
-        a.href =  '/robot_data/' + expID + "/" + expID + ".avi";
+	var rnum = Math.random();
+        a.href =  '/robot_data/' + expID + "/" + expID + ".avi?v=" + rnum;
 	a.innerHTML = "Download Current Movie"
 	leftDiv.appendChild(a);
 	document.body.appendChild(leftDiv);
  	b = document.createElement('a');
-        b.href =  '/robot_data/' + expID + "/lifespanoutput_" + expID + ".csv";
+        b.href =  '/robot_data/' + expID + "/lifespanoutput_" + expID + ".csv?v=" + rnum;
 	b.innerHTML = "Download Current Data"
     	leftDiv2.appendChild(b);
     	document.body.appendChild(leftDiv2);
