@@ -55,7 +55,12 @@ const Scalar SCALAR_RED = Scalar(0.0,0.0,255.0);
 
 //Globals
 int expID;
-ofstream debugger("/disk1/robot_data/updatedebug");
+string datapath; //hold the path to all the robot data
+//read in path from /usr/lib/cgi-bin/data_path
+ifstream pathfile("/usr/lib/cgi-bin/data_path");
+
+
+ofstream debugger;
 int numworms=0;
 
 
@@ -346,7 +351,7 @@ void Update_Contours(string filename, int lowthresh, int highthresh){
 
 								 }
 							stringstream outfilename;
-						 	outfilename << "/disk1/robot_data/" << expID << "/current_contrast.png";
+						 	outfilename << datapath << expID << "/current_contrast.png";
 
 						 	imwrite(outfilename.str().c_str(), drawing);
 
@@ -399,7 +404,7 @@ int getAgeinDays(int framenum){
 	stringstream oss;
 	string fulldirectory;
 	long frametime;
-	oss << "/disk1/robot_data/" << expID << "/";
+	oss << datapath << expID << "/";
 
 		fulldirectory=oss.str();
 		stringstream number;
@@ -417,7 +422,7 @@ int getAgeinMinutes(int framenum){
 	stringstream oss;
 	string fulldirectory;
 	long frametime;
-	oss << "/disk1/robot_data/" << expID << "/";
+	oss << datapath << expID << "/";
 
 		fulldirectory=oss.str();
 		stringstream number;
@@ -535,6 +540,12 @@ string printWormLifespan(string title){
 //////////// M A I N
 int main(int argc,char **argv){
 
+	getline(pathfile,datapath);
+	pathfile.close();
+
+	string updatepath = datapath + "updatedebug";
+	debugger.open(updatepath.c_str());
+
 	stringstream wormfilename;
 	 Cgicc cgi;
 	 int moviestart,moviestop=0;
@@ -554,7 +565,7 @@ int main(int argc,char **argv){
 
 
 
-	      wormfilename << "/disk1/robot_data/" << expID << "/wormlist.csv";
+	      wormfilename << datapath << expID << "/wormlist.csv";
 	      ofstream wormfile(wormfilename.str().c_str());
 	      stringstream readcgi;
 		  readcgi << foo;
@@ -562,7 +573,8 @@ int main(int argc,char **argv){
 		  ptree pt;
 		  read_json (readcgi, pt);
 
-		  ofstream testboost("/disk1/robot_data/updateboost");
+		  string tboost(datapath + "updateboost");
+		  ofstream testboost(tboost.c_str());
 		  testboost << "movstart:" << moviestart << ",moviestop:" << moviestop << endl;
 		  write_json(testboost,pt);
 
@@ -600,7 +612,7 @@ int main(int argc,char **argv){
 
 	//build the wormlist
 	stringstream wormpath;
-	wormpath << "/disk1/robot_data/" << expID << "/";
+	wormpath << datapath << expID << "/";
 	loadWorms(wormfilename.str());
 
 
@@ -614,7 +626,7 @@ int main(int argc,char **argv){
 		stringstream currimgfilename;
 		stringstream number;
 		number << setfill('0') << setw(6) << currframe;
-		currimgfilename << "/disk1/robot_data/" << expID << "/aligned" << number.str() << ".png";
+		currimgfilename << datapath << expID << "/aligned" << number.str() << ".png";
 		Update_Contours(currimgfilename.str(),lowthresh, highthresh);
 
 	}//end if update contours
@@ -626,8 +638,8 @@ int main(int argc,char **argv){
 
 	//dump description into lifespan output
 	stringstream filename,ofilename;
-	filename << "/disk1/robot_data/" << expID << "/description.txt";
-	ofilename << "/disk1/robot_data/"<< expID << "/lifespanoutput_" << expID << ".csv";
+	filename << datapath << expID << "/description.txt";
+	ofilename << datapath << expID << "/lifespanoutput_" << expID << ".csv";
 	ifstream ifile(filename.str().c_str());
 	ofstream ofile(ofilename.str().c_str());
 	string aline;
