@@ -317,7 +317,7 @@ void alignDirectory(string dirname, vector<string> filelist, int numframes, int 
 	    				replace_all(fileframenumber,".png","");
 	    				//cout <<fileframenumber;
 
-	    				textadd << "/disk1/ffmpeg -hide_banner -y -i " << filelist[i-2] <<
+	    				textadd << "ffmpeg -hide_banner -y -i " << filelist[i-2] <<
 	    						" -vf drawtext=\"box=1:fontfile=/usr/share/fonts/truetype/freefont/FreeSansBold.ttf: text='" <<
 	    						fileframenumber << " " <<
 	    						 formattedtime << "': fontcolor=black: fontsize=24: x=5:y=(h-th)" <<
