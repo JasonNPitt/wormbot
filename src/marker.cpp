@@ -525,13 +525,13 @@ void processStartForm(void){
 		expID=atol(cgi("expID").c_str());
 		//doalign=1;
 	}
-	oss << "/var/www/robot_data/" << expID << "/";
+	oss << datapath.str() << expID << "/";
 
 	fulldirectory=oss.str();
 
 	oss.str(""); //nnull
 
-	oss << "/robot_data/" << expID << "/";
+	oss << "/wormbot/" << expID << "/";
 	directory = oss.str();
 
 	//cout << "processdir:" << directory << "<br>" << endl;
@@ -662,7 +662,7 @@ string buildMovie(string filename, int startframe, int endframe){
 		ffmpeg << " \"";
 	}
 
-	ffmpeg << " -q:v 1 -vframes " << (endframe+1)-startframe << " " << filename << expID <<".avi 2>&1 | tee /var/www/robot_data/ffmpegstdout.txt" << endl;
+	ffmpeg << " -q:v 1 -vframes " << (endframe+1)-startframe << " " << filename << expID <<".avi 2>&1 | tee /tmp/ffmpegstdout.txt" << endl;
 
 	system(ffmpeg.str().c_str());
 

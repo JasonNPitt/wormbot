@@ -958,7 +958,7 @@ int main(int argc, char** argv) {
 	ifstream pathfile("/usr/lib/cgi-bin");
 	getline (pathfile,datapath);
 	pathfile.close();
-	
+		
 
  
 	// testing

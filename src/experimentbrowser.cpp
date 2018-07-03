@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
       // Set up the HTML document
       cout << HTTPHTMLHeader() << endl;
       cout << html() << endl << endl;
-      cout << head(title("Kaeberlein Lab Worm Lifespan Experiment Browser")) << endl << endl;
+      cout << head(title("WormBot Experiment Browser")) << endl << endl;
       cout << "<style>table, th, td {border: 1px solid black;}</style>" << endl << endl;
       cout << body() << endl;
       //cout << img().set("src","http://kaeberleinlab.org/images/kaeberlein-lab-logo-2.png") << endl;
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 
     	  // create table element for experiment ID
     	  cout << "  <tr>\n"
-    	       << "    <td><a href=\"/cgi-bin/imagealigner?loadedexpID=" << i << "\" target=\"_blank\">" << i << "</a></td>" << endl;
+    	       << "    <td><a href=\"/cgi-bin/marker?loadedexpID=" << i << "\" target=\"_blank\">" << i << "</a></td>" << endl;
 
     	  // get title and description of this experiment from description.txt
     	  // ***REPLACE WITH JSON***
@@ -84,8 +84,8 @@ int main(int argc, char **argv) {
     	  readdesc.close();
 
     	  // create table elements for title and description of this experiment
-    	  cout << "    <td><a href=\"/cgi-bin/imagealigner?loadedexpID=" << i << "\" target=\"_blank\">" << title << "</a></td>" << endl;
-    	  cout << "    <td><a href=\"/cgi-bin/imagealigner?loadedexpID=" << i << "\" target=\"_blank\">" << description << "</a></td>" << endl;
+    	  cout << "    <td><a href=\"/cgi-bin/marker?loadedexpID=" << i << "\" target=\"_blank\">" << title << "</a></td>" << endl;
+    	  cout << "    <td><a href=\"/cgi-bin/marker?loadedexpID=" << i << "\" target=\"_blank\">" << description << "</a></td>" << endl;
 
     	  // get a count of worms in this experiment
     	  stringstream wfile;
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
     	  wfilestream.close();
 
     	  // create table element for worm count
-    	  cout << "    <td><a href=\"/cgi-bin/imagealigner?loadedexpID=" << i << "\" target=\"_blank\">" << num_worms << "</a></td>" << endl;
+    	  cout << "    <td><a href=\"/cgi-bin/marker?loadedexpID=" << i << "\" target=\"_blank\">" << num_worms << "</a></td>" << endl;
 
     	  // create buttons for deleting and downloading this experiment's data
     	  cout << "    <td><button type=\"button\" onclick=\"deleteExp()\"><img src=\"/wormbot/img/icon_delete.png\"</button></td>" << endl;
