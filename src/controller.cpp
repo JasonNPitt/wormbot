@@ -54,7 +54,7 @@ using namespace LibSerial;
 
 #define BLANKUPDATE ",,,,,,,"
 
-#define PORT "/dev/ttyUSB0" //This is system-specific"/tmp/interceptty"
+#define PORT "/dev/ttyUSB0" //This is system-specific"/tmp/interceptty" we need to make this configurable
 
 
 #define MAX_PLATES 12
@@ -952,15 +952,22 @@ void eraseLog(void){
 
 int main(int argc, char** argv) {
 
-	datapath = "/var/www/wormbot/experiments";
+	//datapath = "/var/www/wormbot/experiments";
 
+//read in path from /usr/lib/cgi-bin/data_path
+	ifstream pathfile("/usr/lib/cgi-bin");
+	getline (pathfile,datapath);
+	pathfile.close();
+	
+
+ 
 	// testing
 	//syncWithJoblist(true);
 
 	ifstream t("var/root_dir");
 	root_dir << t.rdbuf();
 
-	bool skipIntro = true;
+	bool skipIntro = false;
 
 	if (!skipIntro) {
 		raiseBeep(10);
@@ -978,15 +985,14 @@ int main(int argc, char** argv) {
 	string machineMax("LL");
 	string machineRestX("MX150");
 	string machineRestY("MY150");
-	//ifstream readpath("var/datapath");
-	//readpath >> datapath;
+	
 	cout << "OpenCV " << CV_MAJOR_VERSION << "." << CV_MINOR_VERSION << endl;
 	string arduinoport(PORT);
 	eraseLog();
 
 	cout << "********************************************************************" << endl;
 	cout << "Kaeberlein Robot controller" << endl
-		 << "Jason N Pitt and Nolan Strait : Kaeberlein Lab : http://kaeberleinlab.org" << endl;
+		 << "Jason N Pitt and Nolan Strait : Kaeberlein Lab : http://wormbot.org" << endl;
 	cout << "********************************************************************" << endl;
 
 	cout << "setting camera parameters \n";
