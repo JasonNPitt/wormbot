@@ -49,4 +49,5 @@ sudo service apache2 restart
 
 # configure directories and all that shit
 cd $WD
+make all
 sudo ./CONFIG
