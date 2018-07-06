@@ -8,7 +8,7 @@ WD=(pwd)
 
 # define constants
 ROOT_DIR=$(cat var/root_dir)
-WEB_DIR=/var/www/wormbot
+WEB_DIR=/var/www/html/wormbot
 
 
 # handle installation directory
@@ -24,13 +24,14 @@ fi
 
 
 # setup directories in root
-sudo mkdir $ROOT_DIR
-sudo mkdir $ROOT_DIR/experiments
+#sudo mkdir $ROOT_DIR #this needs to be setup already in the LVM...should just symlink it
+
+#sudo mkdir $ROOT_DIR/experiments
 #sudo mkdir $WEB_DIR
 sudo ln --symbolic $ROOT_DIR $WEB_DIR
 #sudo ln --symbolic -T $ROOT_DIR/experiments $WEB_DIR/experiments
 #sudo ln --symbolic $WEB_DIR /var/www/html/wormbot
-sudo chmod a+r $WEB_DIR/experiments
+sudo chmod a+r $WEB_DIR
 sudo echo ,,,,,,, > $ROOT_DIR/RRRjoblist.csv
 sudo chmod a+rw $ROOT_DIR/RRRjoblist.csv
 
@@ -46,8 +47,10 @@ sudo cp plateform.html $WEB_DIR
 
 
 # move necessary files to cgi-bin
-sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler /usr/lib/cgi-bin
+sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater /usr/lib/cgi-bin
 
+# move retrograde files to the web html retrograde directory
+sudo cp -r retrograde/ /var/www/html/
 
 # move script for wormbot in command-line
 sudo cp bin/wormbot /bin
@@ -63,4 +66,3 @@ fi
 
 sudo chmod -R +rw $WEB_DIR
 
-sudo cp -r retrograde/ /var/www/html/
