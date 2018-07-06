@@ -99,6 +99,11 @@ int daysold=0;  //the worms' age in days for the start of the observations on wo
 int lowthresh=0; //hold the lower threshold limit for the edge finding algo
 int highthresh=0; //hold the upper threshold limit for the edge finding algo
 
+string datapath; ///holds the data directory
+//read in path from /usr/lib/cgi-bin/data_path
+ifstream pathfile("/usr/lib/cgi-bin/data_path");
+
+
 
 vector<long> frametimes;  //the unix epoch of the frame array in terms of seconds of worm age...offset by daysold from description.txt
 
@@ -294,7 +299,7 @@ public:
 		//create the subdirectory
 		stringstream mkdircommand;
 		stringstream path;
-		path << "/disk1/robot_data/" << expID << "/worm_num" << n ;
+		path << datapath << expID << "/worm_num" << n ;
 		mkdircommand << "mkdir " << path.str() << endl;
 		system(mkdircommand.str().c_str());
 
@@ -313,7 +318,7 @@ public:
 
 
 					stringstream contmasspath;
-					contmasspath << "/disk1/robot_data/" << expID << "/worm_num" << n << "/contourmass";
+					contmasspath << datapath << expID << "/worm_num" << n << "/contourmass";
 					ofstream cmfile(contmasspath.str().c_str());
 
 
@@ -384,7 +389,7 @@ public:
 					cmfile.close();
 
 					stringstream contpath;
-					contpath << "/disk1/robot_data/" << expID << "/worm_num" << n << "/diffsum";
+					contpath << datapath << expID << "/worm_num" << n << "/diffsum";
 					ofstream cfile(contpath.str().c_str());
 
 					//calculate the interframe diffs on contours
@@ -500,15 +505,16 @@ main(int argc,
 
 
 
-
-	ofstream serverlock("/disk1/robot_data/serverlock.lock");
+	string lockpath (datapath + "serverlock.lock");
+	ofstream serverlock(lockpath.c_str());
 	serverlock.close();
 
 
 
 	  std::streambuf *psbuf, *backup;
 	  std::ofstream filestr;
-	  filestr.open ("/var/www/robot_data/cgiechooutput");
+	  string cgidumpfile(datapath + "cgiechooutput");
+	  filestr.open (cgidumpfile.c_str());
 
 	  backup = std::cerr.rdbuf();     // back up cout's streambuf
 
@@ -520,7 +526,7 @@ main(int argc,
 
 
 
-	string boostfilename("/var/www/robot_data/boostoutput");
+	string boostfilename(datapath + "boostoutput");
 	ofstream boostfile(boostfilename.c_str());
 	boostfile << "boostopen" << endl;
 
@@ -579,7 +585,7 @@ main(int argc,
       // handle any errors
 	   cout << "exception caught from cgicc!!!" << endl;
 	   filestr.close();
-	   remove("/disk1/robot_data/serverlock.lock");
+	   remove(lockpath.c_str());
 	   boostfile.close();
 	   return(0);
 
@@ -597,7 +603,7 @@ main(int argc,
    	vector<string> filelist;
 
 
-   	experimentpath  << "/disk1/robot_data/" << expID << "/";
+   	experimentpath  << datapath << expID << "/";
 
 
 
@@ -751,7 +757,7 @@ ofstream lifespanFile(ss.str().c_str());
 
 
    filestr.close();
-   remove("/disk1/robot_data/serverlock.lock");
+   remove(lockpath.c_str());
 
 
 
