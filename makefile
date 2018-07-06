@@ -33,7 +33,7 @@ cgiccretro: src/cgiccretro.cpp
 wormlistupdater: src/wormlistupdater.cpp
 	$(CXX) $(CFLAGS) src/wormlistupdater.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/wormlistupdater
 
-all: alignerd controller experimentbrowser marker scheduler cgiccretro
+all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater
 
 clean:
 	rm bin/*
