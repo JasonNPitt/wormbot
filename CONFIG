@@ -24,7 +24,9 @@ fi
 
 
 # setup directories in root
-#sudo mkdir $ROOT_DIR #this needs to be setup already in the LVM...should just symlink it
+if [ ! -d "/wormbot" ]; then
+sudo mkdir $ROOT_DIR #this needs to be setup already in the LVM...should just symlink it but if it's not there we need to make it
+fi
 
 #sudo mkdir $ROOT_DIR/experiments
 #sudo mkdir $WEB_DIR
