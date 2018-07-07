@@ -45,7 +45,7 @@ sudo service apache2 restart
 ## libserial
 ##git clone https://github.com/crayzeewulf/libserial.git
 #
-#sudo ldconfig -v
+sudo ldconfig -v
 
 # configure directories and all that shit
 cd $WD
