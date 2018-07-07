@@ -87,7 +87,7 @@ stringstream root_dir;
 
 SerialStream ardu;
 string datapath;
-int cameranum;
+int cameranum=0;
 string logfilename = root_dir.str() + "/robot.log";
 ofstream logfile(logfilename.c_str(), ofstream::app);
 streambuf *coutbuf = std::cout.rdbuf(); //save old buf
@@ -997,7 +997,7 @@ int main(int argc, char** argv) {
 
 	cout << "setting camera parameters \n";
 	camera = setupCamera();
-	cameranum = boost::lexical_cast<int>((int) camera[camera.length() - 1]);
+	cameranum = boost::lexical_cast<int>(camera[camera.length() - 1]);
 	cout << "camera number:" << cameranum << " " << camera << endl;
 
 
