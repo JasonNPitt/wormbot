@@ -790,8 +790,8 @@ string fdGetFile(int fd) {
 
 int checkJoblistUpdate(void) {
 
-	string filename = datapath + "/RRRjoblist.csv";
-	//cout << "  opening " << filename.c_str() << endl;
+	string filename = datapath + "RRRjoblist.csv";
+	cout << "  opening " << filename.c_str() << endl;
 	int fd = open (filename.c_str(), O_RDONLY);
 
 	// exit if file not found
@@ -828,7 +828,7 @@ int checkJoblistUpdate(void) {
 // @param init indicates we've just turned on the robot with true
 void syncWithJoblist(bool init = false) {
 
-	string filename = datapath + "/RRRjoblist.csv";
+	string filename = datapath + "RRRjoblist.csv";
 	cout << filename << endl;
 	int fd = open(filename.c_str(), O_RDONLY);
 
@@ -955,7 +955,7 @@ int main(int argc, char** argv) {
 	//datapath = "/var/www/wormbot/experiments";
 
 //read in path from /usr/lib/cgi-bin/data_path
-	ifstream pathfile("/usr/lib/cgi-bin");
+	ifstream pathfile("/usr/lib/cgi-bin/data_path");
 	getline (pathfile,datapath);
 	pathfile.close();
 		
