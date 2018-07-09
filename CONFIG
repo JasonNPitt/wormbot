@@ -33,7 +33,7 @@ fi
 sudo ln --symbolic $ROOT_DIR $WEB_DIR
 #sudo ln --symbolic -T $ROOT_DIR/experiments $WEB_DIR/experiments
 #sudo ln --symbolic $WEB_DIR /var/www/html/wormbot
-sudo chmod a+r $WEB_DIR
+sudo chmod a+rw $WEB_DIR
 sudo echo ,,,,,,, > $ROOT_DIR/RRRjoblist.csv
 sudo chmod a+rw $ROOT_DIR/RRRjoblist.csv
 
@@ -41,6 +41,7 @@ sudo chmod a+rw $ROOT_DIR/RRRjoblist.csv
 # move necessary files to root dir
 sudo cp camera.config platecoordinates.dat bin/alignerd bin/controller $ROOT_DIR
 sudo echo 0 > $ROOT_DIR/currexpid.dat
+sudo chmod a+rw $ROOT_DIR/currexpid.dat
 
 
 # move necessary files to web dir
