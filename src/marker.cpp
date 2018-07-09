@@ -702,7 +702,7 @@ int main(int argc, char **argv) {
 	ifstream t("var/root_dir");
 	root_dir << t.rdbuf();
 
-	string fn = root_dir.str() + "/data_path";
+	string fn = "/usr/lib/cgi-bin/data_path";
 	ifstream t2(fn.c_str());
 	datapath << t2.rdbuf();
 
