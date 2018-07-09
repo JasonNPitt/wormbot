@@ -21,7 +21,7 @@ then
 	make
 	sudo make install
 	cd ..
-	rm -rf ffmpeg-3.4
+	#rm -rf ffmpeg-3.4
 
 	# opencv
 	cd ~
