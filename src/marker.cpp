@@ -744,7 +744,7 @@ int main(int argc, char **argv) {
 	cout << "<input type=\"hidden\" name=\"loadedexpID\" value=\"" << expID << "\"> " << endl;
     printWormImgs();
 	cout << "<input type=\"image\" src=\"" << getCurrframe() << "\" class=\"under\" name=\"mappy\">" << endl;
-    cout << "<input type=\"image\" name=\"cpan\" src=\"/img/CONTROL.png\" class=\"controlpanel\">" << endl;
+    cout << "<input type=\"image\" name=\"cpan\" src=\"/wormbot/img/CONTROL.png\" class=\"controlpanel\">" << endl;
 
     cout << "<div class=\"controlpanel\" >" << endl;
 	//cout << cgi("mappy.x") <<endl;
