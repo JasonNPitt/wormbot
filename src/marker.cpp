@@ -704,7 +704,9 @@ int main(int argc, char **argv) {
 
 	string fn = "/usr/lib/cgi-bin/data_path";
 	ifstream t2(fn.c_str());
-	getline(t2,datapath);
+	string apath;
+	getline(t2,apath);
+	datapath.str(apath);
 
 	int mapx;
 	int mapy;
