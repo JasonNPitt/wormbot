@@ -118,7 +118,7 @@ public:
 	string drawIcon(int now){
 		stringstream oss;
 		 if (now >= currf){
-			 oss << "<img src=\"/dead.png\" class=\"w" << number << "\">";
+			 oss << "<img src=\"/wormbot/img/dead.png\" class=\"w" << number << "\">";
 			 oss << "<div class=\"w" << number << "\" >" << number << "</div>" << endl;
 		 }//end if should be visible
         return ( oss.str());
@@ -629,7 +629,7 @@ string buildMovie(string filename, int startframe, int endframe){
 	if (wormlist.size() != 0) {
 
 		for (int i=0; i < wormlist.size(); i++){
-			ffmpeg << " -i /var/www/dead.png "; //load the worm circle for each dead worm
+			ffmpeg << " -i /var/www/html/wormbot/img/dead.png "; //load the worm circle for each dead worm
 		}
 		//load the base timelapse movie
 		ffmpeg << " -filter_complex \" [0:v] setpts=PTS-STARTPTS [base]; "; 
