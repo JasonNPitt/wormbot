@@ -5,7 +5,7 @@ TESTING=false
 # save working directory
 WD=$(pwd)
 
-sudo apt --assume-yes install git cmake libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev ubuntu-restricted-extras libcgicc5-dev libboost-dev apache2 libserial-dev arduino beep v4l-utils
+sudo apt --assume-yes install git cmake libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev ubuntu-restricted-extras libcgicc5-dev libboost-dev apache2 libserial-dev arduino beep v4l-utils guvcview
 # maybe libcgicc3?????
 
 # skip big installs if testing
