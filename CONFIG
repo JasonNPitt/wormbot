@@ -51,6 +51,7 @@ sudo cp plateform.html $WEB_DIR
 
 # move necessary files to cgi-bin
 sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater /usr/lib/cgi-bin
+sudo cp ../ffmpeg-3.4/ffmpeg /usr/lib/cgi-bin/
 
 # move retrograde files to the web html retrograde directory
 sudo cp -r retrograde/ /var/www/html/
