@@ -286,8 +286,8 @@ void readDirectory(void){
 
 	stringstream globpattern;
 	globpattern  << fulldirectory.c_str() << string("frame*.png");
-     //cout << "directory:" << directory << "<br>" << endl;
-	//cout <<"globpat:" << globpattern.str() << "<br>" << endl;
+     cout << "fulldirectory:" << fulldirectory << "<br>" << endl;
+	cout <<"globpat:" << globpattern.str() << "<br>" << endl;
 
 	glob(globpattern.str().c_str(),GLOB_TILDE,NULL,&glob_result);
 
