@@ -591,7 +591,7 @@ public:
 		filename << directory << "/day" << getCurrAge() << ".avi";
 		Size size = Size(CAMERA_FRAME_WIDTH, CAMERA_FRAME_HEIGHT);
 
-		output.open(filename.str().c_str(), VideoWriter::fourcc('H', '2', '6', '4'),
+		output.open(filename.str().c_str(), VideoWriter::fourcc('M', 'P', '4', '2'),
 				input.get(CAP_PROP_FPS), size, true);
 
 		if (!output.isOpened()) {
