@@ -5,6 +5,9 @@ TESTING=false
 # save working directory
 WD=$(pwd)
 
+sudo apt --assume-yes install yasm autoconf automake build-essential libass-dev libfreetype6-dev libtool libsdl2-dev libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev pkg-config texinfo zlib1g-dev
+sudo ldconfig -v
+
 sudo apt --assume-yes install git cmake autoconf automake build-essential libass-dev libfreetype6-dev libtool libsdl2-dev libva-dev libvdpau-dev libvorbis-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev pkg-config texinfo zlib1g-dev yasm libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev ubuntu-restricted-extras libcgicc5-dev libboost-dev apache2 libserial-dev arduino beep v4l-utils guvcview
 # maybe libcgicc3?????
 
