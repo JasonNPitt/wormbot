@@ -503,7 +503,7 @@ main(int argc,
      char **argv)
 {
 
-
+	getline(pathfile,datapath); //get the path from the cgi-bin/data_path
 
 	string lockpath (datapath + "serverlock.lock");
 	ofstream serverlock(lockpath.c_str());
