@@ -39,7 +39,7 @@ sudo chmod a+rw $ROOT_DIR/RRRjoblist.csv
 
 
 # move necessary files to root dir
-sudo cp camera.config platecoordinates.dat bin/alignerd bin/controller $ROOT_DIR
+sudo cp camera.config platecoordinates.dat generate_coordinates.py bin/alignerd bin/controller $ROOT_DIR
 sudo echo 0 > $ROOT_DIR/currexpid.dat
 sudo chmod a+rw $ROOT_DIR/currexpid.dat
 
