@@ -440,7 +440,7 @@ lifespanBtn.addEventListener("click", function(){
 	     	var outputRects = JSON.stringify(rects);
 	     	$.ajax({
                 	type : "POST",
-                	url  : "/cgi-bin/cgiccecho",
+                	url  : "/cgi-bin/cgiccretro",
                 	data : { "name" : outputRects,"expID" : expID, "lowthresh" : lowthresh, "highthresh":highthresh},
                 	success : function (data){
 
