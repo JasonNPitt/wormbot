@@ -8,7 +8,7 @@ case "$1" in
 		# will eventually want to execute in background
 		;;
 	aligner)
-		$ROOT_DIR/aligerd
+		$ROOT_DIR/alignerd $ROOT_DIR
 		;;
 	*)
 		echo $"Usage: $0 {aligner|controller}"

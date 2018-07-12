@@ -59,6 +59,9 @@ sudo cp -r retrograde/ /var/www/html/
 # move script for wormbot in command-line
 sudo cp bin/wormbot /bin
 
+#move launch script to init.d
+sudo cp startWormbot /etc/init.d
+
 
 if $TESTING ;
 then
