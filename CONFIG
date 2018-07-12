@@ -60,7 +60,7 @@ sudo cp -r retrograde/ /var/www/html/
 sudo cp bin/wormbot /bin
 
 #move launch script to init.d
-sudo cp startWormbot /etc/init.d
+#sudo cp startWormbot /etc/init.d
 
 
 if $TESTING ;
