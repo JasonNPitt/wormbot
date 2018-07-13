@@ -62,7 +62,7 @@ sudo cp bin/wormbot /bin
 #move launch script to /etc/rc.local
 sudo head -n -1 /etc/rc.local > /tmp/temp.rc.local ; mv /tmp/temp.rc.local /etc/rc.local
 sudo echo "/wormbot/alignerd /wormbot/" >> /etc/rc.local
-sudo echo "/wormbot/controller" >> /etc/rc.local
+sudo echo "/wormbot/controllerd" >> /etc/rc.local
 sudo echo "exit 0" >> /etc/rc.local
 sudo chmod +x /etc/rc.local
 sudo systemctl enable rc-local.service
