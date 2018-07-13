@@ -18,6 +18,9 @@ alignerd: src/alignerd.cpp
 controller: src/controller.cpp
 	$(CXX) $(CFLAGS) src/controller.cpp $(LIB) $(OPENCV_LIB) -o bin/controller
 
+controllerd: src/controllerd.cpp
+	$(CXX) $(CFLAGS) src/controllerd.cpp $(LIB) $(OPENCV_LIB) -o bin/controllerd
+
 experimentbrowser: src/experimentbrowser.cpp
 	$(CXX) $(CFLAGS) src/experimentbrowser.cpp -lcgicc -o bin/experimentbrowser
 
@@ -33,7 +36,7 @@ cgiccretro: src/cgiccretro.cpp
 wormlistupdater: src/wormlistupdater.cpp
 	$(CXX) $(CFLAGS) src/wormlistupdater.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/wormlistupdater
 
-all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater
+all: alignerd controller controllerd experimentbrowser marker scheduler cgiccretro wormlistupdater
 
 clean:
 	rm bin/*
