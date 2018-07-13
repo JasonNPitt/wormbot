@@ -59,8 +59,11 @@ sudo cp -r retrograde/ /var/www/html/
 # move script for wormbot in command-line
 sudo cp bin/wormbot /bin
 
-#move launch script to init.d
-#sudo cp startWormbot /etc/init.d
+#move launch script to /etc/rc.local
+sudo head -n -1 /etc/rc.local > /tmp/temp.rc.local ; mv /tmp/temp.rc.local /etc/rc.local
+sudo echo "/wormbot/alignerd /wormbot/" >> /etc/rc.local
+sudo echo "/wormbot/controller" >> /etc/rc.local
+sudo echo "exit 0" >> /etc/rc.local
 
 
 if $TESTING ;
