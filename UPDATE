@@ -1,5 +1,9 @@
 #!/bin/bash
 
+sudo killall controllerd
+sudo killall controller
+sudo killall alignerd
+
 TESTING=false
 
 
