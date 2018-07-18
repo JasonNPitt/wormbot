@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : controller.cpp
+// Name        : controller.cpp  | with  dot following
 // Authors     : Jason N Pitt and Nolan Strait
 // Version     :
 // Copyright   : MIT LICENSE
@@ -59,7 +59,7 @@ using namespace LibSerial;
 
 #define MAX_PLATES 12
 #define MAX_WELLS 12
-#define WELL_WAIT_PERIOD 2  //pause between wells
+#define WELL_WAIT_PERIOD 0  //pause between wells
 #define SCAN_PERIOD (TESTING ? 30 : 600)   // time between scans (default 600sec/10min)
 #define LOAD_WAIT_PERIOD (TESTING ? 20 : 120) // default 120sec/2min
 #define SCAN_COMPLETE_TIMEOUT 1800//maximum time to wait for a scan before resetting robot state 30 min
@@ -248,6 +248,7 @@ public:
 	int monitorSlot;
 	string wellname;
 	string strain;
+	Mat originMat;
 
 
 	Well(void){}
@@ -615,6 +616,34 @@ public:
 		return 0;
 	}
 
+
+	bool lockOnTarget(void){
+		int dx,dy=0;
+		stringstream cmd("");
+
+		
+		while (dx > ACCCEPTABLE_JITTER || dy > ACCEPTABLE_JITTER){		
+			//capture frame
+
+			//get centroid of pink pixels
+		
+			dx= pinkcenter.x - target.x;
+			dy= pinkcenter.y - target.y;
+		
+			int x1=xval + dx;
+			int y1=yval + dy;
+			cmd << "M" << x1 << "," << y1;
+			sendCommand(cmd.str());
+			Timer locktimer;
+			locktimer.startTimer((long) TARGET_WAIT_PERIOD);		
+			while (!locktime.checkTimer());
+
+		}
+		
+			
+		
+	}//end lockOnTarget
+
 	int gotoWell(void) {
 		stringstream cmd("");
 		Timer waittimer;
@@ -626,6 +655,7 @@ public:
 		sendCommand(cmd.str());
 		waittimer.startTimer((long) WELL_WAIT_PERIOD);
 		while (!waittimer.checkTimer());
+		lockOnTarget();
 		return 0; // should change to show success?
 	} //end gotoWell
 
@@ -697,11 +727,11 @@ void scanExperiments(void) {
 
 			while (captured != 1) {
 				captured = thisWell->capture_frame(align);
-				//cout << "cap count:" << capcount++ << endl;
+				
 			}
 		}
 	}
-}
+}//end scanExperiments
 
 
 bool addMonitorJob(Well* well) {
@@ -967,7 +997,7 @@ int main(int argc, char** argv) {
 	ifstream t("var/root_dir");
 	root_dir << t.rdbuf();
 
-	bool skipIntro = false;
+	bool skipIntro = true;
 
 	if (!skipIntro) {
 		raiseBeep(10);
@@ -976,8 +1006,8 @@ int main(int argc, char** argv) {
 		system(msg.c_str());
 	}
 
-	cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
-	daemon(0,1);
+	//cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
+	//daemon(0,1);
 
 	string read;
 	string camera;
@@ -1004,6 +1034,7 @@ int main(int argc, char** argv) {
 	int portnum = 0;
 
 	int robotfound = 0;
+
 	ScanPort: while (!robotfound) {
 
 		ardu.Open(arduinoport);
@@ -1038,14 +1069,14 @@ int main(int argc, char** argv) {
 
 	currMonitorSlot = calcCurrSlot();
 
-	//loadCurrExperiments(datapath + string("RRRjoblist.csv"));
+	
 	string msg;
 	msg = "Loading experiments from joblist...";
 	cout << msg << endl;
 	writeToLog(msg);
 
 	syncWithJoblist(true);
-	//printCurrExperiments();
+	
 
 
 	// ***ROBOT STATE MACHINE***
@@ -1063,8 +1094,7 @@ int main(int argc, char** argv) {
 		// Cycle through wells and take pictures
 		case ROBOT_STATE_SCANNING:
 
-			//cout << "start robot state scanning" << endl;
-			//writeToLog("start robot state scanning");
+			
 
 			msg = "Scanning...";
 			cout << msg << endl;
@@ -1073,7 +1103,7 @@ int main(int argc, char** argv) {
 			raiseBeep(3);
 
 			scanTimer.startTimer((long) SCAN_PERIOD);
-			//timeouttimer.startTimer((long) SCAN_COMPLETE_TIMEOUT);
+			
 
 			// iterate over experiments
 			scanExperiments();
@@ -1115,8 +1145,7 @@ int main(int argc, char** argv) {
 		// robot is in between scans
 		case ROBOT_STATE_WAIT:
 
-			//cout << "start robot state wait" << endl;
-			//writeToLog("start robot state wait");
+			
 
 			msg = "Syncing with joblist...";
 			cout << msg << endl;
@@ -1128,12 +1157,10 @@ int main(int argc, char** argv) {
 
 			// Check joblist for updates
 			if (updated) {
-				//configureChanges();
-				//updateJoblist();
+				
 				robotstate = ROBOT_STATE_LOAD;
 			} else {
-				//updateJoblist(); // save current state
-				// wait for next timepoint
+				
 				cout << "Waiting..." << endl;
 				while (!scanTimer.checkTimer()) {}
 				robotstate = ROBOT_STATE_SCANNING;
@@ -1145,8 +1172,7 @@ int main(int argc, char** argv) {
 		// Wait for experimenter to load/unload plates
 		case ROBOT_STATE_LOAD:
 
-			//cout << "start robot state load" << endl;
-			//writeToLog("start robot state load");
+			
 
 			msg = "Preparing to load/unload plates...";
 			cout << msg << endl;
@@ -1160,7 +1186,7 @@ int main(int argc, char** argv) {
 			loadTimer.startTimer((long) LOAD_WAIT_PERIOD);
 			while (!loadTimer.checkTimer()) {}
 
-			//for (int j = 1; j < 4; j++) chordBeep(double(j));
+			for (int j = 1; j < 4; j++) chordBeep(double(j));
 
 			msg = "Ending load period... Keep clear of machine";
 			cout << msg << endl;

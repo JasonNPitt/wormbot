@@ -59,7 +59,7 @@ using namespace LibSerial;
 
 #define MAX_PLATES 12
 #define MAX_WELLS 12
-#define WELL_WAIT_PERIOD 0  //pause between wells
+#define WELL_WAIT_PERIOD 2  //pause between wells
 #define SCAN_PERIOD (TESTING ? 30 : 600)   // time between scans (default 600sec/10min)
 #define LOAD_WAIT_PERIOD (TESTING ? 20 : 120) // default 120sec/2min
 #define SCAN_COMPLETE_TIMEOUT 1800//maximum time to wait for a scan before resetting robot state 30 min

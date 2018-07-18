@@ -1,0 +1,46 @@
+#!/bin/bash
+
+TESTING=false
+
+
+# save working directory
+WD=(pwd)
+
+# define constants
+ROOT_DIR=$(cat var/root_dir)
+WEB_DIR=/var/www/html/wormbot
+
+
+# handle installation directory
+if [ "$#" -eq 1 ]
+then
+	ROOT_DIR=$1
+	echo $ROOT_DIR > var/root_dir
+elif [ "$#" -gt 1 ]
+then
+	echo "Usage: $0 [DIR]"
+	exit
+fi
+
+
+make all
+
+
+
+# move necessary files to root dir
+sudo cp camera.config platecoordinates.dat generate_coordinates.py bin/alignerd bin/controller bin/controllerd $ROOT_DIR
+
+
+# move necessary files to web dir
+sudo cp -r img $WEB_DIR/img
+sudo cp plateform.html $WEB_DIR
+
+
+# move necessary files to cgi-bin
+sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater /usr/lib/cgi-bin
+
+# move retrograde files to the web html retrograde directory
+sudo cp -r retrograde/ /var/www/html/
+
+
+
