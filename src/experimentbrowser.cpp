@@ -38,19 +38,62 @@ string datapath;
 
 
 
+
+string checkForArchive(int id) {
+	
+	stringstream archivefilename;
+	archivefilename << datapath << id << ".tar.gz";
+	
+	ifstream checkArch(archivefilename.str().c_str());
+	if (checkArch.good()){
+		stringstream linkname;
+		linkname << "/wormbot/" << id << ".tar.gz";
+		return linkname.str();
+	} else {
+		return string("");
+	}
+
+
+
+}//end checkforarchive
+
+
+
 int main(int argc, char **argv) {
   
 	  //get the wormbot path
 	  ifstream readpath("data_path");
 	  readpath >> datapath;
 
+//head of HTML File
+
+	cout << HTTPHTMLHeader() << endl;
+      cout << html() << endl << endl;
+      cout << head(title("WormBot Experiment Browser")) << endl << endl;
+      cout <<   "<script type=\"text/javascript\" src=\"//code.jquery.com/jquery-1.9.1.js\"></script>" << endl;	
+      cout << "<style>table, th, td {border: 1px solid black;}</style>" << endl << endl;
+      cout << body() << endl;
+      cout << br() <<endl;
+
  try {
 	//read in the delete and archive commands and act on them
 	if (!cgi("delete").empty()){	
 		int expToDelete = atoi(cgi("delete").c_str());
 		stringstream deleter;
-		deleter << "/usr/lib/cgi-bin/deleteexperiment " << expToDelete;	
+		deleter << "/usr/lib/cgi-bin/deleteexperiment " << expToDelete;
+		cout << "<H1>Deleting...</H1>\n";	
+		//if archive exists remove it		
+		stringstream delarch;	
+		delarch << datapath << expToDelete << ".tar.gz";		
+		remove(delarch.str().c_str());
 		system(deleter.str().c_str());
+	}
+	if (!cgi("backup").empty()){	
+		int expToBackup = atoi(cgi("backup").c_str());
+		stringstream backer;
+		backer << "/usr/lib/cgi-bin/backupexperiment " << expToBackup;	
+		cout << "<H1>Compressing...</H1>\n";
+		system(backer.str().c_str());
 	}
 } catch (exception& e) {
       // handle any errors - omitted for brevity
@@ -64,13 +107,7 @@ int main(int argc, char **argv) {
 	  ifile >> expID;
 
       // Set up the HTML document
-      cout << HTTPHTMLHeader() << endl;
-      cout << html() << endl << endl;
-      cout << head(title("WormBot Experiment Browser")) << endl << endl;
-      cout <<   "<script type=\"text/javascript\" src=\"//code.jquery.com/jquery-1.9.1.js\"></script>" << endl;	
-      cout << "<style>table, th, td {border: 1px solid black;}</style>" << endl << endl;
-      cout << body() << endl;
-      cout << br() <<endl;
+      
 
       cout << "<h1>Experiment Browser</h1>\n"
     	   << "<table>\n"
@@ -79,6 +116,9 @@ int main(int argc, char **argv) {
 		   << "    <th>Exp ID</th>\n"
 		   << "    <th>Description</th>\n"
 		   << "    <th>Worms Scored</th>\n"
+		   << "		<th> Delete </th>\n"
+		   << "		<th> Backup </th>\n"
+		   << "		<th> Archive </th>\n"
 		   << "  </tr>" << endl;
 
       // create HTML table entries for each experiment
@@ -87,7 +127,10 @@ int main(int argc, char **argv) {
 	  stringstream dfile;
     	  dfile << datapath << i << "/description.txt";
     	  ifstream readdesc(dfile.str().c_str());
-	  if (!readdesc.good()) continue; //if the experiment is empty skip
+	  if (!readdesc.good()) {
+		if (!checkForArchive(i).empty()) ; else continue;
+		 //if the experiment is empty skip
+	  }
 
     	  // create table element for experiment ID
     	  cout << "  <tr>\n"
@@ -126,6 +169,10 @@ int main(int argc, char **argv) {
     	  cout << "    <td><button type=\"button\" onclick=\"deleteExp(" << i << ")\"><img src=\"/wormbot/img/icon_delete.png\"</button></td>" << endl;
     	  cout << "    <td><button type=\"button\" onclick=\"downloadExp(" << i << ")\"><img src=\"/wormbot/img/icon_download.png\"</button></td>" << endl;
 
+	  // create download links if they exist for the experiments
+
+	  cout << "<td> <a href=\"" << checkForArchive(i) << "\"> " << checkForArchive(i) << "</a></td>" << endl; 
+
     	  // end this table row
     	  cout << "  </tr>" << endl;
       }
@@ -146,7 +193,15 @@ int main(int argc, char **argv) {
                    << " });"														<< endl
 		   << "  }}\n"														<< endl
 		   << "  function downloadExp(id) {\n"
-		   << "    confirm(\"Download all data for this experiment?\");\n"
+		   << "    if (confirm(\"Make archive of all data for this experiment?\")) { filename = \"/cgi-bin/experimentbrowser\";" 	<< endl
+		   << " $.ajax({ " 													<< endl
+		   << " type : \"POST\", " 												<< endl
+                   << " url  : filename," 												<< endl
+                   << "	data : { \"backup\":id},"											<< endl
+                   << "	success : function (){ "											<< endl
+		   << "	alert( \"experiment:\" + id + \" compressed\");}"								<< endl	
+                   << " });"														<< endl
+		   << "  }\n"														<< endl
 		   << "  }\n"
 		   << "</script>" << endl;
 
