@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : controller.cpp
+// Name        : controller.cpp  | with  dot following
 // Authors     : Jason N Pitt and Nolan Strait
 // Version     :
 // Copyright   : MIT LICENSE
@@ -26,6 +26,7 @@
 #include <iomanip>
 #include <cstdio>
 #include <ctime>
+#include <numeric>
 
 #include <errno.h>
 #include <linux/videodev2.h>
@@ -80,6 +81,10 @@ using namespace LibSerial;
 #define SECONDS_IN_DAY 86400
 #define SECONDS_IN_HOUR 3600
 
+#define ACCEPTABLE_JITTER 2
+#define JITTER_WAIT 500
+
+
 
 //GLOBALS
 
@@ -88,12 +93,22 @@ stringstream root_dir;
 SerialStream ardu;
 string datapath;
 int cameranum=0;
-string logfilename = root_dir.str() + "/robot.log";
+string logfilename = datapath + "/robot.log";
 ofstream logfile(logfilename.c_str(), ofstream::app);
 streambuf *coutbuf = std::cout.rdbuf(); //save old buf
 
 
 int currMonitorSlot;
+
+bool doDotFollow = false;
+
+//color variables for finding pink markers
+int iLowH = 152;
+int iHighH = 179;
+int iLowS = 123; 
+int iHighS = 255;
+int iLowV = 36;
+int iHighV = 255;
 
 // calculates current monitor slot based on time of day
 int calcCurrSlot() {
@@ -111,6 +126,30 @@ int sendCommand(string command){
 	while (read.find("RR") == string::npos){ getline(ardu,read);}
 	return 0;
 }
+
+//returns the average of a vector of int
+double avg1(std::vector<int> const& v) {
+    return 1.0 * std::accumulate(v.begin(), v.end(), 0LL) / v.size();
+}
+
+
+
+void setCameraSaturation(int sat){
+	
+
+
+	//set camera to color:
+
+		string camfile(datapath + string("camera.config"));
+		ifstream inputfile(camfile.c_str());
+		string cameradevice;
+		getline(inputfile,cameradevice);
+		stringstream camerasettings;
+		camerasettings << "v4l2-ctl -d " << cameradevice <<" -c saturation=" << sat  << endl;
+		cout << "set sat command:" << camerasettings.str() << endl;
+		system(camerasettings.str().c_str());
+}//end setcameratocolor
+
 
 
 class Timer {
@@ -248,6 +287,9 @@ public:
 	int monitorSlot;
 	string wellname;
 	string strain;
+	int targetx; //hold the centroid coordinates of pink target
+	int targety; //	
+	bool hasTracking;
 
 
 	Well(void){}
@@ -307,6 +349,26 @@ public:
 		string torank = boost::lexical_cast<string>(plate) + wellname;
 		rank = getRank(torank);
 
+		//set default target locks to -1
+		targetx=-1;
+		targety=-1;
+
+		//check for presence of a loc-nar file
+		string locfile;
+		string targets;
+		locfile= directory + "loc-nar.csv";			
+		ifstream locnar(locfile.c_str());
+		if (locnar.good()){
+			token="";
+			getline(locnar,token, ',');
+			targetx = atol(token.c_str());
+			token="";
+			getline(locnar,token, ',');
+			targety = atol(token.c_str());
+			hasTracking=true;
+						
+		} else hasTracking=false;//end if there was a loc-nar
+			
 		//printDescriptionFile();
 	}   //end construct
 
@@ -365,7 +427,7 @@ public:
 		vector<string> wellorder;
 
 		string filename;
-		filename = root_dir.str() + string("/platecoordinates.dat");
+		filename = datapath + string("/platecoordinates.dat");
 		ifstream ifile(filename.c_str());
 		string readline;
 
@@ -460,6 +522,8 @@ public:
 			compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION); //(CV_IMWRITE_PXM_BINARY);
 			compression_params.push_back(0);
 
+			setCameraSaturation(100);
+
 			VideoCapture cap(cameranum); // open the default camera
 
 			long c = 0;
@@ -474,6 +538,7 @@ public:
 
 			cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
 			cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
+			cout << "cv sat set:" << cap.get(CV_CAP_PROP_SATURATION) << endl;
 
 			if ((int)cap.get(CV_CAP_PROP_FRAME_WIDTH) != 1920
 				|| (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT) != 1080)
@@ -496,7 +561,7 @@ public:
 				return 0;
 			}
 
-		    cvtColor(frame, frame_gray, CV_BGR2GRAY); //make it gray
+		    
 
 			Mat lastframe;
 			Mat im2_aligned;
@@ -505,11 +570,70 @@ public:
 			stringstream lastfilename;
 			stringstream number;
 			number << setfill('0') << setw(6) << currentframe;
-			// ***POSSIBLE BUG: "frame" ***
+			
 			filename << directory << "frame" << number.str() << ".png";
 
-			// for first frame
-			if (currentframe < 1 || doAlign == 0) {
+			// for first frame try to find a pink bead and if found generate a loc-nar.csv file
+			cout << "wellname:" << wellname << " currentframe:" << currentframe << endl;
+			if (currentframe ==0){
+				cap.set(CV_CAP_PROP_SATURATION,100);
+				cout << "frame 0 cv sat set:" << cap.get(CV_CAP_PROP_SATURATION) << endl;
+				
+				cap >> frame;
+				i = 0;
+				while (frame.empty() && i < 3) {
+					sleep(1);
+					cap >> frame;
+					i++;
+				}
+				Mat imgHSV;
+
+				cvtColor(frame, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+ 
+  				Mat imgThresholded;
+
+  				inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
+
+				//morphological opening (remove small objects from the foreground)
+				erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+				dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+
+				//morphological closing (fill small holes in the foreground)
+				dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+				erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+				
+				
+
+				if (countNonZero(imgThresholded) > 300 && doDotFollow) { //if saw a bead
+					string dotfile = directory + string("legendarydots.png");
+					cout << "dotfile:" << dotfile << endl;	
+					imwrite(dotfile, imgThresholded, compression_params);
+					Moments m = moments(imgThresholded, true);
+					targetx= m.m10/m.m00;
+					targety= m.m01/m.m00;
+					string denofearth = directory + string("loc-nar.csv");
+					cout << "making locnar file:" << denofearth << endl;
+					ofstream den(denofearth.c_str());
+					den << targetx << "," << targety << endl;
+					den.close();					
+				}//end if saw a bead
+				else cout << "mass was:" << countNonZero(imgThresholded);
+
+
+				setCameraSaturation(0);								
+				
+				 
+
+
+			}//end if first frame
+
+			
+			cvtColor(frame, frame_gray, CV_BGR2GRAY); //make it gray
+
+
+
+
+			if (doAlign == 0) {
 				imwrite(filename.str(), frame_gray, compression_params); //frame vs frame_gray
 			}
 
@@ -517,8 +641,8 @@ public:
 			else {
 				number.str("");
 				number << setfill('0') << setw(6) << currentframe - 1;
-				// ***POSSIBLE BUG: "/frame" ***
-				lastfilename << directory << "/frame" << number.str() << ".pgm";
+			
+				lastfilename << directory << "frame" << number.str() << ".pgm";
 				Mat im1 = imread(lastfilename.str());
 				Mat im1_gray;
 				cvtColor(im1, im1_gray, CV_BGR2GRAY);
@@ -615,6 +739,150 @@ public:
 		return 0;
 	}
 
+
+	bool lockOnTarget(void){
+		if (targetx < 0 || targety < 0) return(0); //return if no bead found originally
+		int dx,dy=1000;
+		stringstream cmd("");
+
+		//set camera to color:
+
+		setCameraSaturation(255);
+
+		
+		try {
+
+				vector<int> compression_params;
+				compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION); //(CV_IMWRITE_PXM_BINARY);
+				compression_params.push_back(0);
+
+				VideoCapture cap(cameranum); // open the default camera
+
+				long c = 0;
+				while (!cap.isOpened()) { // check if we succeeded
+					if (c < 3) sleep(1);
+					else {
+						cout << "  camera could not be opened" << endl;
+						return -1;
+					}
+					c++;
+				} //end while not opened
+
+				cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
+				cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
+
+				if ((int)cap.get(CV_CAP_PROP_FRAME_WIDTH) != 1920
+					|| (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT) != 1080)
+					cout << "  cannot adjust video capture properties!" << endl;
+
+	
+
+
+				int jittercount=0;
+		
+				while (1 ){		
+					//capture frame
+			
+
+				
+						Mat frame;
+
+						// capture frame
+						cap >> frame;
+						int i = 0;
+						while (frame.empty() && i < 3) {
+							sleep(1);
+							cap >> frame;
+							i++;
+						}
+
+						if (i == 3) { // no frame captured
+							cout << "  unable to capture lock frame! (expID: " << expID << ")" << endl;
+							return 0;
+						}
+
+				
+			
+
+
+
+
+
+					//get centroid of pink pixels
+					Mat imgHSV;
+
+					  cvtColor(frame, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+					 
+					  Mat imgThresholded;
+
+					  inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
+
+					 //morphological opening (remove small objects from the foreground)
+					  erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+					  dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+
+					//morphological closing (fill small holes in the foreground)
+					  dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+					  erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+					Moments m = moments(imgThresholded, true);
+					int pinkcenterx= m.m10/m.m00;
+					int pinkcentery= m.m01/m.m00;
+
+
+		
+					dx= pinkcenterx - targetx;
+					dy= pinkcentery - targety;
+					if (abs(dx) > 1920 || abs(dy) > 1080) {
+						if (jittercount++ > JITTER_WAIT) break;
+						continue;  //didn't see a dot try to capture a frame again
+					}
+
+					cout << "Well:" << wellname << " targetx:" << targetx << " targety:" << targety << " pinkcenterx:" << pinkcenterx << " pinkcentery:" << pinkcentery << endl; 
+
+
+					///move the camera to lock in
+					if (dx <-10 ) for (int i=0; i < log(abs(dx)); i++ ){sendCommand("W");cout << "w:" << i << "dx:" << dx << endl;}
+					if (dx > 10 ) for (int i=0; i < log(abs(dx)); i++ ){sendCommand("S");cout << "s:" << i << "dx:" << dx << endl;}
+					if (dy < -10) for (int i=0; i < log(abs(dy)); i++ ){sendCommand("A");cout << "a:" << i << "dy:" << dy << endl;}
+					if (dy > 10 ) for (int i=0; i < log(abs(dy)); i++ ){sendCommand("D");cout << "d:" << i << "dy:" << dy << endl;} 
+					if (dx <-3 ) sendCommand("W");	
+					if (dx > 3 ) sendCommand("S");
+					if (dy < -3) sendCommand("A");
+					if (dy > 3 ) sendCommand("D");
+				/*
+					int x1=xval + dx;
+					int y1=yval + dy;
+					cmd << "M" << x1 << "," << y1;
+					sendCommand(cmd.str());
+					Timer locktimer;
+					locktimer.startTimer((long) TARGET_WAIT_PERIOD);		
+					while (!locktime.checkTimer());
+				*/
+
+				        if (jittercount++ > JITTER_WAIT || (abs(dx) < ACCEPTABLE_JITTER && abs(dy) < ACCEPTABLE_JITTER)) {
+						cout << "final dx,dy:"<< dx << "," << dy << endl;
+						if (abs(dx) > ACCEPTABLE_JITTER || abs(dy) > ACCEPTABLE_JITTER){
+							string jitterlogname = datapath + string("jitterlog.dat");							
+							ofstream jitterlog(jitterlogname.c_str(), fstream::app);
+							jitterlog << "Well:" << wellname << ",dx:" << dx << ",dy:" << dy << endl;
+							jitterlog.close();
+						}//end log bad jitter						
+						break;
+					}		
+				}//end while not locked
+
+		} catch (cv::Exception ex) {
+
+			}//end if caught exception
+
+		//set camera to monochrome
+		setCameraSaturation(0);
+		
+			
+		
+	}//end lockOnTarget
+
 	int gotoWell(void) {
 		stringstream cmd("");
 		Timer waittimer;
@@ -626,6 +894,7 @@ public:
 		sendCommand(cmd.str());
 		waittimer.startTimer((long) WELL_WAIT_PERIOD);
 		while (!waittimer.checkTimer());
+		if (doDotFollow) lockOnTarget();
 		return 0; // should change to show success?
 	} //end gotoWell
 
@@ -697,11 +966,11 @@ void scanExperiments(void) {
 
 			while (captured != 1) {
 				captured = thisWell->capture_frame(align);
-				//cout << "cap count:" << capcount++ << endl;
+				
 			}
 		}
 	}
-}
+}//end scanExperiments
 
 
 bool addMonitorJob(Well* well) {
@@ -934,7 +1203,7 @@ void syncWithJoblist(bool init = false) {
 
 
 void writeToLog(string logline){
-	string fn = root_dir.str() + "/runlog";
+	string fn = datapath + "/runlog";
 	ofstream ofile(fn.c_str(), std::ofstream::app);
 	ofile << logline << endl;
 	ofile.close();
@@ -942,7 +1211,7 @@ void writeToLog(string logline){
 
 
 void eraseLog(void){
-	string fn = root_dir.str() + "/runlog";
+	string fn = datapath + "/runlog";
 	ofstream ofile(fn.c_str());
 	ofile << "start log" <<endl;
 	ofile.close();
@@ -951,6 +1220,25 @@ void eraseLog(void){
 
 
 int main(int argc, char** argv) {
+
+	if (argc >1) {
+		
+		for (int i=0; i < argc; i++){
+			string args(argv[i]);
+			//cout << "args:" << args << endl;
+			if (args.find("-df") != string::npos){
+				 doDotFollow = true; //do dot following if -df flag is present
+				cout << "tracking pink dots" << endl;
+				}
+			if (args.find("-daemon") != string::npos){
+				 
+			
+				cout << "starting as daemon" << endl;
+				cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
+				daemon(0,1);
+				}
+		}//end for each argument
+	} else cout << "not tracking dots, no daemon" << endl;
 
 	//datapath = "/var/www/wormbot/experiments";
 
@@ -967,17 +1255,16 @@ int main(int argc, char** argv) {
 	ifstream t("var/root_dir");
 	root_dir << t.rdbuf();
 
-	bool skipIntro = false;
+	bool skipIntro = true;
 
 	if (!skipIntro) {
 		raiseBeep(10);
 		chordBeep(1);
-		string msg = "cd " + root_dir.str() + "; ./play.sh mario.song";
+		string msg = "cd " + datapath + "; ./play.sh mario.song";
 		system(msg.c_str());
 	}
 
-	//cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
-	//daemon(0,1);
+	//
 
 	string read;
 	string camera;
@@ -1004,6 +1291,7 @@ int main(int argc, char** argv) {
 	int portnum = 0;
 
 	int robotfound = 0;
+
 	ScanPort: while (!robotfound) {
 
 		ardu.Open(arduinoport);
@@ -1012,8 +1300,11 @@ int main(int argc, char** argv) {
 		ardu.SetCharSize(SerialStreamBuf::CHAR_SIZE_8);
 
 		cout << "Set baud rate 9600 and char size 8 bits\n Waiting for Robot to be ready." << endl;
+		sendCommand("ZZ");
+		sendCommand("LL");
+		robotfound=true;
 
-		// wait for scanner
+		/* wait for scanner
 		Timer startupwait;
 		startupwait.startTimer(long(120));
 		while (read.find("RR") == string::npos) {
@@ -1029,6 +1320,7 @@ int main(int argc, char** argv) {
 			} // end if waited too long
 		}
 		robotfound = 1;
+		*/
 
 	} 
 
@@ -1038,14 +1330,14 @@ int main(int argc, char** argv) {
 
 	currMonitorSlot = calcCurrSlot();
 
-	//loadCurrExperiments(datapath + string("RRRjoblist.csv"));
+	
 	string msg;
 	msg = "Loading experiments from joblist...";
 	cout << msg << endl;
 	writeToLog(msg);
 
 	syncWithJoblist(true);
-	//printCurrExperiments();
+	
 
 
 	// ***ROBOT STATE MACHINE***
@@ -1063,8 +1355,7 @@ int main(int argc, char** argv) {
 		// Cycle through wells and take pictures
 		case ROBOT_STATE_SCANNING:
 
-			//cout << "start robot state scanning" << endl;
-			//writeToLog("start robot state scanning");
+			
 
 			msg = "Scanning...";
 			cout << msg << endl;
@@ -1073,7 +1364,7 @@ int main(int argc, char** argv) {
 			raiseBeep(3);
 
 			scanTimer.startTimer((long) SCAN_PERIOD);
-			//timeouttimer.startTimer((long) SCAN_COMPLETE_TIMEOUT);
+			
 
 			// iterate over experiments
 			scanExperiments();
@@ -1115,8 +1406,7 @@ int main(int argc, char** argv) {
 		// robot is in between scans
 		case ROBOT_STATE_WAIT:
 
-			//cout << "start robot state wait" << endl;
-			//writeToLog("start robot state wait");
+			
 
 			msg = "Syncing with joblist...";
 			cout << msg << endl;
@@ -1128,12 +1418,10 @@ int main(int argc, char** argv) {
 
 			// Check joblist for updates
 			if (updated) {
-				//configureChanges();
-				//updateJoblist();
+				
 				robotstate = ROBOT_STATE_LOAD;
 			} else {
-				//updateJoblist(); // save current state
-				// wait for next timepoint
+				
 				cout << "Waiting..." << endl;
 				while (!scanTimer.checkTimer()) {}
 				robotstate = ROBOT_STATE_SCANNING;
@@ -1145,8 +1433,7 @@ int main(int argc, char** argv) {
 		// Wait for experimenter to load/unload plates
 		case ROBOT_STATE_LOAD:
 
-			//cout << "start robot state load" << endl;
-			//writeToLog("start robot state load");
+			
 
 			msg = "Preparing to load/unload plates...";
 			cout << msg << endl;
@@ -1160,7 +1447,7 @@ int main(int argc, char** argv) {
 			loadTimer.startTimer((long) LOAD_WAIT_PERIOD);
 			while (!loadTimer.checkTimer()) {}
 
-			//for (int j = 1; j < 4; j++) chordBeep(double(j));
+			for (int j = 1; j < 4; j++) chordBeep(double(j));
 
 			msg = "Ending load period... Keep clear of machine";
 			cout << msg << endl;

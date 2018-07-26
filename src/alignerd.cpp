@@ -22,7 +22,7 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-#define DELAY_TIME 1800
+#define DELAY_TIME 60
 
 
 using namespace std;
@@ -33,7 +33,7 @@ using namespace boost;
 
 
 string directory("");
-stringstream root_dir;
+stringstream root_dir("/var/www/html/wormbot/");
 
 string currfilename;
 string fn = root_dir.str() + "alignerd.log";
@@ -288,48 +288,37 @@ void alignDirectory(string dirname, vector<string> filelist, int numframes, int 
 	    			 string oldname = filelist[i];
 	    			 replace_all(filelist[i],"frame","aligned");
 	    			 cout << "writing: "<<filelist[i] << endl;
-	    			 imwrite(filelist[i], im2_aligned_gray, compression_params );
-	    			 cout << "writefile  " << endl;
-	    			 cout << "timestamp" <<  swapTimes(oldname,filelist[i]) << endl;
-
-	    			 //add timestamps to the files that are already aligned
-	    			 if (i > 2){
-	    				Mat towrite=imread(filelist[i-2]);
-	    				 //write timestamps
+				
+				//Write timestamps with openCV
+				
 	    				stringstream textadd;
 	    				struct utimbuf atime;
-	    				atime.modtime = getFileCreationTime(filelist[i-2]);
+	    				atime.modtime = getFileCreationTime(oldname);
 	    				atime.actime = atime.modtime;
 
 	    				stringstream filetime;
 
 
 	    				filetime << ctime(&atime.modtime);
-	    				string formattedtime(filetime.str());
+	    				string formattedtime(filetime.str().substr(0,filetime.str().size()-1)); //get the ctime string
 	    				string fileframenumber;
-	    				replace_all(formattedtime,":",".");
-                        //cout << "formatted time" << formattedtime << endl;
-                       // cout << " filelist-2:" << filelist[i-2];
-                        int spot = filelist[i-2].find("aligned");
-                        //cout << " spot:" << spot;
-	    				fileframenumber = filelist[i-2].substr(spot+7);
+	    				replace_all(formattedtime,":",".");  //strip out : for FFMPEG compat
+					int spot = filelist[i].find("aligned");  //find index of the framenumber
+	    				fileframenumber = filelist[i].substr(spot+7);
+	    				replace_all(fileframenumber,".png",""); //remove ".png"
+					textadd << fileframenumber << " " << formattedtime; //put framenumber and timestamp into text
+					Point lowerleft(10,im2_aligned_gray.size().height-10);
 
-	    				replace_all(fileframenumber,".png","");
-	    				//cout <<fileframenumber;
+					putText(im2_aligned_gray, textadd.str(), lowerleft,FONT_HERSHEY_COMPLEX_SMALL, 0.8,cvScalar(255, 255, 255), 1, CV_AA);
 
-	    				textadd << "ffmpeg -hide_banner -y -i " << filelist[i-2] <<
-	    						" -vf drawtext=\"box=1:fontfile=/usr/share/fonts/truetype/freefont/FreeSansBold.ttf: text='" <<
-	    						fileframenumber << " " <<
-	    						 formattedtime << "': fontcolor=black: fontsize=24: x=5:y=(h-th)" <<
-	    						"\" " << filelist[i-2] << " 2> /dev/null" << endl;
-	    				//ofstream testfile("drawtext.txt");
-	    				//testfile << textadd.str();
-	    				//testfile.close();
-	    				system(textadd.str().c_str());
-	    				//update the timestamp on the file
-	    				utime(filelist[i-2].c_str(), &atime);
 
-	    			 }//end if I greater than 2
+
+	    			 imwrite(filelist[i], im2_aligned_gray, compression_params );
+	    			 cout << "writefile  " << endl;
+	    			 cout << "timestamp" <<  swapTimes(oldname,filelist[i]) << endl;
+
+	    			 
+	    			
 	}//end for each frame
 }//end alignDirectory
 
@@ -371,7 +360,7 @@ void readDirectory(string fulldirectory){
 	cout <<"globpat:" << globpattern.str() << endl;
 
 	glob(globpattern.str().c_str(),GLOB_TILDE,NULL,&glob_result);
-
+	
 	for (unsigned int i=0; i < glob_result.gl_pathc; i++){
 		filelist.push_back(string(glob_result.gl_pathv[i]));
 		numframes++;
@@ -404,18 +393,27 @@ int main(int argc, char **argv) {
 	ifstream t("var/root_dir");
 	root_dir << t.rdbuf();
 
-	cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
+	bool stopdaemon = true;
 
 	// setup a timer and get the robot data directory from the commandline
 	Timer mytimer;
 	string standardfile;
+	cout << "argc=" << argc << endl;
 	if (argc < 1) {
-		standardfile = root_dir.str() + "/experiments";
-	} else {
+		standardfile = "/wormbot/";
+	} else if (argc ==2) {
 		standardfile = argv[1];
+		
+	} else if (argc ==3){
+		standardfile = argv[1];
+		string flags(argv[2]);
+		if (flags.find("-v") == string::npos) stopdaemon=false; 
 	}
 
-	daemon(0,1);
+	if (stopdaemon){
+		cout.rdbuf(logfile.rdbuf()); //redirect std::cout to out.txt!
+		daemon(0,1);
+	}//end if daemon
 
 	while (true) {
 		mytimer.startTimer((long)DELAY_TIME);

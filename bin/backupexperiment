@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+	echo "needs an expID" 		
+	exit
+
+fi
+
+printf -v int '%d\n' "$1" 2>/dev/null
+
+#echo $int
+
+tar -zcvf /wormbot/$1.tar.gz /wormbot/$1/ 
+

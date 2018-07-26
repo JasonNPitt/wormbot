@@ -8,7 +8,15 @@
 
 
 #include <sstream>
+#include <iostream>
+#include <sys/time.h>
+#include <stdlib.h>
+#include <glob.h>
+#include <sys/stat.h>
+#include <utime.h>
 #include <fstream>
+#include <cstdio>
+#include <unistd.h>
 #include <cgicc/CgiDefs.h>
 #include <cgicc/Cgicc.h>
 #include <cgicc/HTTPHTMLHeader.h>
@@ -27,14 +35,26 @@ using namespace cgicc;
 //globals
 Cgicc cgi;
 string datapath;
-string web_dir = "/var/www/wormbot";
+
 
 
 int main(int argc, char **argv) {
-   try {
-
+  
+	  //get the wormbot path
 	  ifstream readpath("data_path");
 	  readpath >> datapath;
+
+ try {
+	//read in the delete and archive commands and act on them
+	if (!cgi("delete").empty()){	
+		int expToDelete = atoi(cgi("delete").c_str());
+		stringstream deleter;
+		deleter << "/usr/lib/cgi-bin/deleteexperiment " << expToDelete;	
+		system(deleter.str().c_str());
+	}
+} catch (exception& e) {
+      // handle any errors - omitted for brevity
+}
 
 	  // get current experiment ID
 	  long expID;
@@ -47,9 +67,9 @@ int main(int argc, char **argv) {
       cout << HTTPHTMLHeader() << endl;
       cout << html() << endl << endl;
       cout << head(title("WormBot Experiment Browser")) << endl << endl;
+      cout <<   "<script type=\"text/javascript\" src=\"//code.jquery.com/jquery-1.9.1.js\"></script>" << endl;	
       cout << "<style>table, th, td {border: 1px solid black;}</style>" << endl << endl;
       cout << body() << endl;
-      //cout << img().set("src","http://kaeberleinlab.org/images/kaeberlein-lab-logo-2.png") << endl;
       cout << br() <<endl;
 
       cout << "<h1>Experiment Browser</h1>\n"
@@ -64,15 +84,18 @@ int main(int argc, char **argv) {
       // create HTML table entries for each experiment
       for (int i = 0; i <= expID; i++) {
 
+	  stringstream dfile;
+    	  dfile << datapath << i << "/description.txt";
+    	  ifstream readdesc(dfile.str().c_str());
+	  if (!readdesc.good()) continue; //if the experiment is empty skip
+
     	  // create table element for experiment ID
     	  cout << "  <tr>\n"
     	       << "    <td><a href=\"/cgi-bin/marker?loadedexpID=" << i << "\" target=\"_blank\">" << i << "</a></td>" << endl;
 
     	  // get title and description of this experiment from description.txt
     	  // ***REPLACE WITH JSON***
-    	  stringstream dfile;
-    	  dfile << datapath << i << "/description.txt";
-    	  ifstream readdesc(dfile.str().c_str());
+    	  
     	  string aline;
     	  string title;
     	  string description;
@@ -100,8 +123,8 @@ int main(int argc, char **argv) {
     	  cout << "    <td><a href=\"/cgi-bin/marker?loadedexpID=" << i << "\" target=\"_blank\">" << num_worms << "</a></td>" << endl;
 
     	  // create buttons for deleting and downloading this experiment's data
-    	  cout << "    <td><button type=\"button\" onclick=\"deleteExp()\"><img src=\"/wormbot/img/icon_delete.png\"</button></td>" << endl;
-    	  cout << "    <td><button type=\"button\" onclick=\"downloadExp()\"><img src=\"/wormbot/img/icon_download.png\"</button></td>" << endl;
+    	  cout << "    <td><button type=\"button\" onclick=\"deleteExp(" << i << ")\"><img src=\"/wormbot/img/icon_delete.png\"</button></td>" << endl;
+    	  cout << "    <td><button type=\"button\" onclick=\"downloadExp(" << i << ")\"><img src=\"/wormbot/img/icon_download.png\"</button></td>" << endl;
 
     	  // end this table row
     	  cout << "  </tr>" << endl;
@@ -112,10 +135,17 @@ int main(int argc, char **argv) {
 
       // add script functions for deleting and downloading experimental data
       cout << "<script>\n"
-    	   << "  function deleteExp() {\n"
-		   << "    confirm(\"Delete all data for this experiment?\");\n"
-		   << "  }\n"
-		   << "  function downloadExp() {\n"
+    	   << "  function deleteExp(id) {\n"
+		   << "    if (confirm(\"Delete all data for this experiment?\")) { filename = \"/cgi-bin/experimentbrowser\";" 	<< endl
+		   << " $.ajax({ " 													<< endl
+		   << " type : \"POST\", " 												<< endl
+                   << " url  : filename," 												<< endl
+                   << "	data : { \"delete\":id},"											<< endl
+                   << "	success : function (){ "											<< endl
+		   << "	alert( \"experiment:\" + id + \" deleted\");}"									<< endl	
+                   << " });"														<< endl
+		   << "  }}\n"														<< endl
+		   << "  function downloadExp(id) {\n"
 		   << "    confirm(\"Download all data for this experiment?\");\n"
 		   << "  }\n"
 		   << "</script>" << endl;
@@ -127,7 +157,5 @@ int main(int argc, char **argv) {
       // Close the HTML document
       cout << body() << endl << endl << html() << endl;
 
-   } catch (exception& e) {
-      // handle any errors - omitted for brevity
-   }
+   
 }

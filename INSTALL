@@ -20,7 +20,7 @@ then
 	tar -xjf ffmpeg-3.4.tar.bz2
 	rm ffmpeg-3.4.tar.bz2
 	cd ffmpeg-3.4
-	./configure --enable-nonfree --enable-pic --enable-shared
+	./configure --enable-nonfree --enable-pic --enable-libfreetype --enable-shared
 	make
 	sudo make install
 	cd ..
