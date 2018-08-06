@@ -394,6 +394,7 @@ int main(int argc, char **argv) {
 	root_dir << t.rdbuf();
 
 	bool stopdaemon = true;
+	int setExp=-1;
 
 	// setup a timer and get the robot data directory from the commandline
 	Timer mytimer;
@@ -404,10 +405,18 @@ int main(int argc, char **argv) {
 	} else if (argc ==2) {
 		standardfile = argv[1];
 		
-	} else if (argc ==3){
+	} else if (argc >=3){
 		standardfile = argv[1];
 		string flags(argv[2]);
 		if (flags.find("-v") == string::npos) stopdaemon=false; 
+		if (flags.find("-e") != string::npos) {
+			setExp = atoi(argv[3]);
+			stringstream targetDir;
+			targetDir << standardfile << setExp << "/" ;
+			readDirectory(targetDir.str());
+			exit(EXIT_SUCCESS);
+			return 0;
+		}//end if "-e"
 	}
 
 	if (stopdaemon){
