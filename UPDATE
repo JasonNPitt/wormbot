@@ -32,7 +32,7 @@ make all
 
 
 # move necessary files to root dir
-sudo cp camera.config generate_coordinates.py bin/alignerd bin/controller $ROOT_DIR
+sudo cp generate_coordinates.py bin/alignerd bin/controller $ROOT_DIR
 
 
 # move necessary files to web dir
