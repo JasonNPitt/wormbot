@@ -224,6 +224,7 @@ function getLastFile(){
 				framenumber=lines[6];
 				totalframes=framenumber;
 				console.log("last frame is: " + framenumber);
+				framenumber = framenumber-1; //off by one
 				LoadFrame();
 
 				return lines[6];
