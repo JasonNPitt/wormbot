@@ -112,8 +112,8 @@ int main(int argc, char **argv) {
       cout << "<h1>Experiment Browser</h1>\n"
     	   << "<table>\n"
 		   << "  <tr>\n"
-		   << "    <th>Title</th>\n"
 		   << "    <th>Exp ID</th>\n"
+		   << "    <th>Title</th>\n"
 		   << "    <th>Description</th>\n"
 		   << "    <th>Worms Scored</th>\n"
 		   << "		<th> Delete </th>\n"
@@ -189,7 +189,8 @@ int main(int argc, char **argv) {
                    << " url  : filename," 												<< endl
                    << "	data : { \"delete\":id},"											<< endl
                    << "	success : function (){ "											<< endl
-		   << "	alert( \"experiment:\" + id + \" deleted\");}"									<< endl	
+		   << "	alert( \"experiment:\" + id + \" deleted\");"									<< endl	
+		   << " window.location.reload(true); }"										<< endl
                    << " });"														<< endl
 		   << "  }}\n"														<< endl
 		   << "  function downloadExp(id) {\n"
@@ -199,7 +200,8 @@ int main(int argc, char **argv) {
                    << " url  : filename," 												<< endl
                    << "	data : { \"backup\":id},"											<< endl
                    << "	success : function (){ "											<< endl
-		   << "	alert( \"experiment:\" + id + \" compressed\");}"								<< endl	
+		   << "	alert( \"experiment:\" + id + \" compressed\");"								<< endl	
+		   << " window.location.reload(true); }"										<< endl
                    << " });"														<< endl
 		   << "  }\n"														<< endl
 		   << "  }\n"
