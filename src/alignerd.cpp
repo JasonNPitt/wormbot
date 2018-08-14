@@ -408,8 +408,12 @@ int main(int argc, char **argv) {
 	} else if (argc >=3){
 		standardfile = argv[1];
 		string flags(argv[2]);
-		if (flags.find("-v") == string::npos) stopdaemon=false; 
+		if (flags.find("-v") == string::npos){
+			 stopdaemon=false;
+			 cout << "-verbose mode" << endl;
+		} 
 		if (flags.find("-e") != string::npos) {
+			cout << "targetted directory mode"<< endl;
 			setExp = atoi(argv[3]);
 			stringstream targetDir;
 			targetDir << standardfile << setExp << "/" ;

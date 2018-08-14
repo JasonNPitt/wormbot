@@ -66,6 +66,7 @@ var lowthresh=0;
 var highthresh=0;
 var serverLocked= false; //the server busy lock
 var totalframes =0; //hold the total number of frames from description.txt
+var lifespanrequested = false;  //hold a flag to see if you asked for the lifespan to be updated
 
 
 //define rectangle object
@@ -86,11 +87,12 @@ function drawRects(){
 
 function drawDeadworms(){
 	console.log("drawingdeadworms");
+	console.log("deadworms.length=" + deadworms.length);
+	//if (deadworms==null) return;
 	for (i=0; i < deadworms.length; i++){
 		//is worm visible
 		if(framenumber >= deadworms[i].deathframe){
-			//console.log("drawingdeadworms2 " + deadworms[i].x + "," + deadworms[i].y);
-			//ctx.strokeRect(deadworms[i].x, deadworms[i].y,10,10);
+			
 			ctx.beginPath();
 		       	ctx.strokeStyle = "red";
 			ctx.lineWidth = 3;
@@ -133,6 +135,8 @@ function LoadWormList(){
                 url:filename,
                 success: function (data){
 			if (data.length < 1) return;
+			if (deadworms.length > 0){ console.log("erase deadworms length=" + deadworms.length); while (deadworms.length >0) deadworms.pop();}
+			
                         eachworm=data.split('\n');
 			console.log("eachworm.length:" + eachworm.length);
                         for (i=0; i < eachworm.length; i++) {
@@ -141,10 +145,13 @@ function LoadWormList(){
 				thisworm=eachworm[i].split(',');
 				if (thisworm.length < 5) continue;
 				var wormstruct = {x:parseInt(thisworm[0]),y:parseInt(thisworm[1]),deathframe:parseInt(thisworm[2]),number:parseInt(thisworm[3]),daysold:parseInt(thisworm[4]),minutesold:parseInt(thisworm[5])};
+				console.log(wormstruct);				
 				deadworms.push(wormstruct);
+				console.log("i=" + i);
 				console.log("load worms deadworms length:" + deadworms.length);
 				getFileDate(filename);		
 			}//end for each worm line
+			doUpdateWormList();
 				
                 }
         });
@@ -246,7 +253,7 @@ $.ajax({
 	 $('#btn').removeClass("followed btn-locked");
     	 $('#btn').html("Server Ready");
 	if (needtounlock){
-		LoadWormlist();
+		LoadWormList();
 		needtounlock=false;
 	}
 
@@ -256,7 +263,7 @@ $.ajax({
         serverLocked=true;
         $('#btn').addClass("followed btn-locked");
         $('#btn').html("Processing...Please wait");
-	needtounlock=true;
+	//needtounlock=true;
 
     }
 });
@@ -342,6 +349,42 @@ function makeDataPanel(){
 }
 
 
+function doUpdateWormList(){
+
+	var deadwormsstring = JSON.stringify(deadworms);
+	var formE1 = document.forms.updateForm;
+	var formData = new FormData(formE1);
+	var startmovie = formData.get('moviestart');
+	var stopmovie = formData.get('moviestop');
+	var checkboxbuildmovie = formData.get('buildMovie');
+	highthresh = formData.get('upperthresh');
+	lowthresh = formData.get('lowerthresh');
+	var checkboxUpdateContours = formData.get('updatecontours');
+
+
+	$.ajax({
+                	type : "POST",
+                	url  : "/cgi-bin/wormlistupdater",
+                	data : { "deadworms" : deadwormsstring, "expID": 			 					expID,"startmovie":startmovie, "stopmovie":stopmovie, 
+				"buildMovie":checkboxbuildmovie, "highthresh":highthresh,
+				"lowthresh":lowthresh, 					"checkboxUpdateContours":checkboxUpdateContours,
+				"currframe":framenumber},
+                	success : function (){
+
+                    	//alert(data);
+			alert("Worm List Updated");
+
+                	}
+                });
+	
+
+
+
+}//end dod updatewormlist
+
+
+
+
 $(window).load(function(){
 
 
@@ -394,6 +437,11 @@ var body = document.getElementsByTagName("body")[0];
 body.appendChild(delBtn);
 body.appendChild(lifespanBtn);
 body.appendChild(gotoBtn);
+
+
+
+
+
 
 
 
@@ -452,6 +500,7 @@ lifespanBtn.addEventListener("click", function(){
 		serverLocked=true;
         	$('#btn').addClass("followed btn-locked");
         	$('#btn').html("Processing...Please wait");	
+		needtounlock=true;
 
 	     }//end if not locked
 

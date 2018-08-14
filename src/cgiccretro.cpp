@@ -760,6 +760,13 @@ ofstream lifespanFile(ss.str().c_str());
    remove(lockpath.c_str());
 
 
+//write out data to cgi so the JS knows it's done/success
+
+		cout << HTTPHTMLHeader() << endl;
+		cout << html() << head(title("Retrograde Done")) << endl;
+		cout << "</body></html>" << endl;
+
+
 
 
 

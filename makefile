@@ -25,6 +25,9 @@ colorpicker: src/colorpicker.cpp
 experimentbrowser: src/experimentbrowser.cpp
 	$(CXX) $(CFLAGS) src/experimentbrowser.cpp -lcgicc -o bin/experimentbrowser
 
+wormbotstatus: src/wormbotstatus.cpp
+	$(CXX) $(CFLAGS) src/wormbotstatus.cpp -lcgicc -o bin/wormbotstatus
+
 marker: src/marker.cpp
 	$(CXX) $(CFLAGS) src/marker.cpp $(OPENCV_LIB) -lcgicc -o bin/marker
 
@@ -37,7 +40,7 @@ cgiccretro: src/cgiccretro.cpp
 wormlistupdater: src/wormlistupdater.cpp
 	$(CXX) $(CFLAGS) src/wormlistupdater.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/wormlistupdater
 
-all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker 
+all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus
 
 
 clean:
