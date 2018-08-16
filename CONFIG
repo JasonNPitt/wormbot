@@ -9,7 +9,7 @@ WD=(pwd)
 # define constants
 ROOT_DIR=$(cat var/root_dir)
 WEB_DIR=/var/www/html/wormbot
-
+CGI_DIR=$ROOT_DIR/cgi-bin
 
 # handle installation directory
 if [ "$#" -eq 1 ]
@@ -28,7 +28,7 @@ if [ ! -d "/wormbot" ]; then
 sudo mkdir $ROOT_DIR #this needs to be setup already in the LVM...should just symlink it but if it's not there we need to make it
 fi
 
-#sudo mkdir $ROOT_DIR/experiments
+sudo mkdir $CGI_DIR #make the password protected CGI-bin
 #sudo mkdir $WEB_DIR
 sudo ln --symbolic $ROOT_DIR $WEB_DIR
 #sudo ln --symbolic -T $ROOT_DIR/experiments $WEB_DIR/experiments
@@ -39,7 +39,7 @@ sudo chmod a+rw $ROOT_DIR/RRRjoblist.csv
 
 
 # move necessary files to root dir
-sudo cp camera.config platecoordinates.dat generate_coordinates.py bin/alignerd bin/controller $ROOT_DIR
+sudo cp camera.config platecoordinates.dat generate_coordinates.py bin/alignerd bin/controller security/.htpasswd $ROOT_DIR
 sudo echo 0 > $ROOT_DIR/currexpid.dat
 sudo chmod a+rw $ROOT_DIR/currexpid.dat
 
@@ -50,8 +50,8 @@ sudo cp plateform.html $WEB_DIR
 
 
 # move necessary files to cgi-bin
-sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater bin/backupexperiment bin/deleteexperiment /usr/lib/cgi-bin
-sudo cp ../ffmpeg-3.4/ffmpeg /usr/lib/cgi-bin/
+sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater bin/backupexperiment bin/deleteexperiment $CGI_DIR
+sudo cp ../ffmpeg-3.4/ffmpeg $CGI_DIR
 
 # move retrograde files to the web html retrograde directory
 sudo cp -r retrograde/ /var/www/html/

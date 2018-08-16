@@ -41,8 +41,9 @@ then
 	#rm -rf opencv-3.3.0
 fi
 
-# enable cgi-bin with apache
+# enable cgi-bin with apache and update apache2.conf for password security
 sudo a2enmod cgi
+sudo cp ./security/apache2.conf /etc/apache2/apache2.conf 
 sudo service apache2 restart
 
 ## libserial
@@ -50,7 +51,7 @@ sudo service apache2 restart
 #
 sudo ldconfig -v
 
-# configure directories and all that shit
+# configure directories and all that sh*t
 cd $WD
 make all
 sudo ./CONFIG
