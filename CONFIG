@@ -78,3 +78,6 @@ fi
 
 sudo chmod -R +rw $WEB_DIR
 
+sudo cp security/apache2.conf /etc/apache2/apache2.conf 
+sudo service apache2 restart
+
