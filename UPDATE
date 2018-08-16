@@ -13,7 +13,7 @@ WD=(pwd)
 # define constants
 ROOT_DIR=$(cat var/root_dir)
 WEB_DIR=/var/www/html/wormbot
-
+CGI_DIR=$ROOT_DIR/cgi-bin
 
 # handle installation directory
 if [ "$#" -eq 1 ]
@@ -41,7 +41,7 @@ sudo cp plateform.html $WEB_DIR
 
 
 # move necessary files to cgi-bin
-sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater bin/backupexperiment bin/deleteexperiment /usr/lib/cgi-bin
+sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater bin/backupexperiment bin/deleteexperiment $CGI_DIR
 
 # move retrograde files to the web html retrograde directory
 sudo cp -r retrograde/ /var/www/html/
