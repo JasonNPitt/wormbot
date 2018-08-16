@@ -41,7 +41,7 @@ sudo cp plateform.html $WEB_DIR
 
 
 # move necessary files to cgi-bin
-sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater bin/backupexperiment bin/deleteexperiment $CGI_DIR
+sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater bin/backupexperiment bin/deleteexperiment bin/wormbotstatus $CGI_DIR
 
 # move retrograde files to the web html retrograde directory
 sudo cp -r retrograde/ /var/www/html/

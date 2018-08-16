@@ -43,7 +43,7 @@ fi
 
 # enable cgi-bin with apache and update apache2.conf for password security
 sudo a2enmod cgi
-sudo cp ./security/apache2.conf /etc/apache2/apache2.conf 
+sudo cp security/apache2.conf /etc/apache2/apache2.conf 
 sudo service apache2 restart
 
 ## libserial
