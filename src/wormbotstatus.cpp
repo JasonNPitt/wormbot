@@ -115,7 +115,7 @@ cout << "islocked:" << islocked << "<BR>" << endl;
 
 //clear hung lock
 
-if (islocked && !retrorunning){ remove(lockname.c_str()); cout << "removed hung lock <br>"<<end;}
+if (islocked && !retrorunning){ remove(lockname.c_str()); cout << "removed hung lock <br>" << endl;}
 
 logfile << "</body></html>" << endl;
 
