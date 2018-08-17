@@ -52,6 +52,8 @@ sudo cp plateform.html $WEB_DIR
 # move necessary files to cgi-bin
 sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater bin/backupexperiment bin/deleteexperiment bin/wormbotstatus $CGI_DIR
 sudo cp ../ffmpeg-3.4/ffmpeg $CGI_DIR
+sudo cp data_path /usr/lib/cgi-bin #this is for compatibilty following security changes to move cgi bin into /wormbot
+
 
 # move retrograde files to the web html retrograde directory
 sudo cp -r retrograde/ /var/www/html/
