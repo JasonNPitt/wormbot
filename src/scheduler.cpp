@@ -566,11 +566,13 @@ int main(int argc, char **argv) {
 		cout << html() << head(title("WormBot Scheduler")) << endl;
 		cout << body() << endl;
 
-		cout << img().set("src","http://kaeberleinlab.org/images/kaeberlein-lab-logo-2.png") << endl;
+		//cout << img().set("src","http://kaeberleinlab.org/images/kaeberlein-lab-logo-2.png") << endl;
+		
+		
 		cout << br() <<endl;
-		cout << "ROBOT SCHEDULER";
 		cout << img().set("src", "/wormbot/img/Bender.png").set("width","300") << endl;
 		cout << br() <<endl;
+		cout << "<h3>SCHEDULER</h3>";
 		cout << form().set("action", "/cgi-bin/scheduler").set("method", "POST") << endl;
 
 		processDeletes();
