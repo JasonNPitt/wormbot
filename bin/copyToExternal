@@ -1,0 +1,24 @@
+#!/bin/bash
+
+echo Enter the experiments you wish to copy to the external harddrive seperated by a space or enter a range ie. 450-475
+
+read expList
+
+for anExp in $expList
+do
+	if [[ $anExp =~ ['-'] ]]; then
+  		echo Range found $anExp
+		expArr=(${anExp//-/ })
+		for ((i=${expArr[0]};i<=${expArr[1]}; i++)); 
+		do
+			echo  $i
+			cp -pR /wormbot/$i .
+		done
+
+	else
+		echo $anExp
+		cp -pR /wormbot/$anExp .
+	fi
+done
+	
+

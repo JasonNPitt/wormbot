@@ -39,7 +39,7 @@ sudo chmod a+rw $ROOT_DIR/RRRjoblist.csv
 
 
 # move necessary files to root dir
-sudo cp camera.config platecoordinates.dat generate_coordinates.py bin/alignerd bin/controller security/.htpasswd $ROOT_DIR
+sudo cp camera.config experimentuploader.html platecoordinates.dat generate_coordinates.py bin/alignerd bin/controller wormbot_template.csv bin/master_control_program security/.htpasswd $ROOT_DIR
 sudo echo 0 > $ROOT_DIR/currexpid.dat
 sudo chmod a+rw $ROOT_DIR/currexpid.dat
 
@@ -63,8 +63,7 @@ sudo cp bin/wormbot /bin
 
 #move launch script to /etc/rc.local
 sudo head -n -1 /etc/rc.local > /tmp/temp.rc.local ; mv /tmp/temp.rc.local /etc/rc.local
-sudo echo "/wormbot/alignerd /wormbot/" >> /etc/rc.local
-sudo echo "/wormbot/controller -daemon" >> /etc/rc.local
+sudo echo "/wormbot/master_control_program" >> /etc/rc.local
 sudo echo "exit 0" >> /etc/rc.local
 sudo chmod +x /etc/rc.local
 sudo systemctl enable rc-local.service

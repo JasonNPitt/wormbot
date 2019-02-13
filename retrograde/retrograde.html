@@ -99,6 +99,7 @@ function drawDeadworms(){
 			ctx.arc(deadworms[i].x,deadworms[i].y,30, 0, 2 *Math.PI,0);
 			ctx.stroke();
 			ctx.font = "30px Arial";
+			ctx.fillStyle = "black";
 			ctx.fillText(i,deadworms[i].x, deadworms[i].y);
 		       	ctx.strokeStyle = "green";
 		
@@ -106,6 +107,14 @@ function drawDeadworms(){
 		
 	}//end for each deadworm
 }//end drawdeadworms
+
+
+function drawExpID(){
+	ctx.font = "30px Arial";
+	ctx.fillStyle = "cyan";
+	ctx.fillText("ExpID = " + expID, 30, 30);
+}//end drawExpID
+
 
 function killWorm(tx,ty){
 	var thiswormnum;
@@ -144,7 +153,7 @@ function LoadWormList(){
 				console.log("eachworm["+ i + ":" + eachworm[i]);
 				thisworm=eachworm[i].split(',');
 				if (thisworm.length < 5) continue;
-				var wormstruct = {x:parseInt(thisworm[0]),y:parseInt(thisworm[1]),deathframe:parseInt(thisworm[2]),number:parseInt(thisworm[3]),daysold:parseInt(thisworm[4]),minutesold:parseInt(thisworm[5])};
+				var wormstruct = {x:parseInt(thisworm[0]),y:parseInt(thisworm[1]),deathframe:parseInt(thisworm[2]),number:parseInt(thisworm[3]),daysold:parseFloat(thisworm[4]),minutesold:parseFloat(thisworm[5])};
 				console.log(wormstruct);				
 				deadworms.push(wormstruct);
 				console.log("i=" + i);
@@ -173,6 +182,7 @@ function LoadFrame(){
 
         drawRects();
 	drawDeadworms();
+	drawExpID();
 
 }//end load frame
 
@@ -187,7 +197,7 @@ document.onkeydown = function (e) {
   		e.preventDefault();
 		console.log("arrowup");
 		framenumber+=10;
-		if (framenumber > totalframes) framenumber = totalframes;
+		if (framenumber >= totalframes) framenumber = totalframes-1;
 		LoadFrame();
             // up arrow
             break;
@@ -212,7 +222,7 @@ document.onkeydown = function (e) {
             // right arrow
 		e.preventDefault();
 		framenumber++;
-		if (framenumber > totalframes) framenumber = totalframes;
+		if (framenumber >= totalframes) framenumber = totalframes-1;
 		LoadFrame();
 		console.log("arrowright");
 		
@@ -660,7 +670,7 @@ function handleMouseMove(e) {
     if (isDown) ctx.strokeRect(startX, startY, width, height);
     drawRects();
     drawDeadworms();	
-    
+    drawExpID();    
     
 
 }

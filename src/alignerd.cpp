@@ -3,7 +3,7 @@
 // Author      : Jason N Pitt
 // Version     :
 // Copyright   : MIT LICENSE
-// Description : Hello World in C++, Ansi-style
+// Description : aligns image files in a folder
 //============================================================================
 
 #include <iostream>
@@ -22,7 +22,10 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-#define DELAY_TIME 60
+#define DELAY_TIME 5
+
+const int MAX_FEATURES = 500;
+const float GOOD_MATCH_PERCENT = 0.15f;
 
 
 using namespace std;
@@ -38,7 +41,7 @@ stringstream root_dir("/var/www/html/wormbot/");
 string currfilename;
 string fn = root_dir.str() + "alignerd.log";
 ofstream logfile(fn.c_str(), ofstream::app);
-streambuf *coutbuf = std::cout.rdbuf(); //save old buf
+//streambuf *coutbuf = std::cout.rdbuf(); //save old buf
 
 
 
@@ -205,6 +208,9 @@ void alignDirectory(string dirname, vector<string> filelist, int numframes, int 
 		 try{
 		 Mat frame=imread(filelist[0]);
 		 Mat frame_gray;
+
+		//convert the first frame to gray and write it out to disk as aligned
+
 		 cvtColor(frame, frame_gray, CV_BGR2GRAY); //make it gray
 		 replace_all(filelist[0],"frame","aligned");
 		 imwrite(filelist[0], frame_gray, compression_params );
@@ -218,35 +224,94 @@ void alignDirectory(string dirname, vector<string> filelist, int numframes, int 
 
 
 	for (int i=numaligned; i < numframes; i++){
+
+		
+
+
+
+
 					cout << "." << endl; //keep webserver from timing out
-					Mat frame;
-					Mat frame_gray;
-			        Mat im2_aligned;
-			        Mat im1_gray;
-			        Mat im1;
+					Mat frame, frame_gray, im2_aligned, im1_gray,im1, h;
 
-					try{
-		            frame=imread(filelist[i]);
+				try{
+				 		frame=imread(filelist[i]);
 
-		            cout << "read filelist ";
-					cvtColor(frame, frame_gray, CV_BGR2GRAY); //make it gray
+				  		cout << "read filelist ";
+						cvtColor(frame, frame_gray, CV_BGR2GRAY); //make it gray
 
-					im1= imread(filelist[0]);//filelist[i-1]);//try warping all to original
+						im1= imread(filelist[0]);//filelist[i-1]);//try warping all to original
 
-					cvtColor(im1, im1_gray, CV_BGR2GRAY);
-					cout << "convert color ";
-					} catch (cv::Exception ex){
+						cvtColor(im1, im1_gray, CV_BGR2GRAY);
+						cout << "convert color ";
+				} catch (cv::Exception ex){
 						//frame is bad...overwrite it with the previous frame
-							    				 stringstream outss;
-							    				 cout << "caught exception:" << ex.code << endl;
-							    				 outss << "cp " << filelist[i-1];
-							    				 replace_all(filelist[i],"frame","aligned");
-							    				 outss << " " << filelist[i] << endl;
-							    				 system(outss.str().c_str());
-							    				// imwrite(filelist[i], frame_gray, compression_params );
-							    				 continue;
+		    				 stringstream outss;
+		    				 cout << "caught exception:" << ex.code << endl;
+		    				 outss << "cp " << filelist[i-1];
+		    				 replace_all(filelist[i],"frame","aligned");
+		    				 outss << " " << filelist[i] << endl;
+		    				 system(outss.str().c_str());
+		    				// imwrite(filelist[i], frame_gray, compression_params );
+		    				 continue;
 
-					}//end frame was bad
+				}//end frame was bad
+				
+/*
+//use keypoints
+
+				// Convert images to grayscale
+				 
+				  
+				   
+				  // Variables to store keypoints and descriptors
+				  std::vector<KeyPoint> keypoints1, keypoints2;
+				  Mat descriptors1, descriptors2;
+				  cout << "1"; 
+				  // Detect ORB features and compute descriptors.
+				  Ptr<Feature2D> orb = ORB::create(MAX_FEATURES);
+				  orb->detectAndCompute(frame_gray, Mat(), keypoints1, descriptors1);
+				  orb->detectAndCompute(im1_gray, Mat(), keypoints2, descriptors2);
+				   cout << "2";
+				  // Match features.
+				  std::vector<DMatch> matches;
+				  Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce-Hamming");
+				  matcher->match(descriptors1, descriptors2, matches, Mat());
+				   cout << "3";
+				  // Sort matches by score
+				  std::sort(matches.begin(), matches.end());
+				   cout << "4";
+				  // Remove not so good matches
+				  const int numGoodMatches = matches.size() * GOOD_MATCH_PERCENT;
+				  matches.erase(matches.begin()+numGoodMatches, matches.end());
+				   			   
+				   cout << "5";
+				  // Extract location of good matches
+				  std::vector<Point2f> points1, points2;
+				   
+				  for( size_t i = 0; i < matches.size(); i++ )
+				  {
+				    points1.push_back( keypoints1[ matches[i].queryIdx ].pt );
+				    points2.push_back( keypoints2[ matches[i].trainIdx ].pt );
+				  }
+				  cout << "6";
+				  // Find homography
+				  
+					 h = estimateRigidTransform(points1, points2,false);
+				   cout << "7";
+					  // Use homography to warp image
+					 try { warpAffine(frame, im2_aligned, h, im1.size(), INTER_LINEAR + WARP_INVERSE_MAP);} catch (cv::Exception ex) {im2_aligned = frame.clone();}
+cout << "8";
+					
+					
+				
+
+				//end use keypoints
+				//use ECC
+
+
+	*/				
+
+
 					// Define the motion model
 					const int warp_mode = MOTION_TRANSLATION;
 
@@ -254,7 +319,7 @@ void alignDirectory(string dirname, vector<string> filelist, int numframes, int 
 					Mat warp_matrix;
 	    			warp_matrix = Mat::eye(2, 3, CV_32F);
 	    			 // Specify the number of iterations.
-	    			int number_of_iterations = 500;
+	    			int number_of_iterations = 50;
 
 	    			 // Specify the threshold of the increment
 	    			 // in the correlation coefficient between two iterations
@@ -282,7 +347,17 @@ void alignDirectory(string dirname, vector<string> filelist, int numframes, int 
 	    			 cout << "ECC ";
 	    			 warpAffine(frame, im2_aligned, warp_matrix, im1.size(), INTER_LINEAR + WARP_INVERSE_MAP);
 	    			 cout << "warp ";
-	    			 Mat im2_aligned_gray;
+	    			
+
+				//end warp ECC
+
+
+
+
+
+
+
+				 Mat im2_aligned_gray;
 	    			 cvtColor(im2_aligned, im2_aligned_gray, CV_BGR2GRAY);
 	    			 cout << "convert color 2";
 	    			 string oldname = filelist[i];
@@ -306,7 +381,7 @@ void alignDirectory(string dirname, vector<string> filelist, int numframes, int 
 					int spot = filelist[i].find("aligned");  //find index of the framenumber
 	    				fileframenumber = filelist[i].substr(spot+7);
 	    				replace_all(fileframenumber,".png",""); //remove ".png"
-					textadd << fileframenumber << " " << formattedtime; //put framenumber and timestamp into text
+					textadd << fileframenumber << " " << formattedtime << " " << dirname; //put framenumber and timestamp into text
 					Point lowerleft(10,im2_aligned_gray.size().height-10);
 
 					putText(im2_aligned_gray, textadd.str(), lowerleft,FONT_HERSHEY_COMPLEX_SMALL, 0.8,cvScalar(255, 255, 255), 1, CV_AA);
@@ -408,7 +483,7 @@ int main(int argc, char **argv) {
 	} else if (argc >=3){
 		standardfile = argv[1];
 		string flags(argv[2]);
-		if (flags.find("-v") == string::npos){
+		if (flags.find("-v") != string::npos){
 			 stopdaemon=false;
 			 cout << "-verbose mode" << endl;
 		} 
@@ -428,11 +503,11 @@ int main(int argc, char **argv) {
 		daemon(0,1);
 	}//end if daemon
 
-	while (true) {
-		mytimer.startTimer((long)DELAY_TIME);
+	//while (true) { //removed endless loop to force master_control to make alignerd restart to deal with OPENCV memory leak
+		//mytimer.startTimer((long)DELAY_TIME);
 	    scanRobotDir(standardfile);
-	    while(!mytimer.checkTimer());  ///wait
-	}
+	   // while(!mytimer.checkTimer());  ///wait
+	//}
 
     exit(EXIT_SUCCESS);
 

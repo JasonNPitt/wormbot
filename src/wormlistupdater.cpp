@@ -10,6 +10,7 @@
 
 //stdlib
 #include <iostream>
+#include <iomanip>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -146,8 +147,8 @@ public:
 	int y;
 	int currf;
 	int number;
-	int daysold;
-	int minutesold;
+	float daysold;
+	float minutesold;
 	long secondsold;
 
 	Worm(int sx, int sy, int curr, int wormnumber,long secs){
@@ -159,8 +160,8 @@ public:
 		daysold=0;
 		minutesold=0;
 		secondsold=secs;
-		minutesold = secondsold / 60;
-		daysold = secondsold /86400;
+		minutesold = ((float)secondsold) / 60.0f;
+		daysold = ((float)secondsold) /86400.0f;
 
 
 	}//end constructor
@@ -178,9 +179,9 @@ public:
         getline(ss,token,',');
         number=atoi(token.c_str());
         getline(ss,token,',');
-        daysold=atoi(token.c_str());
+        daysold=atof(token.c_str());
         getline(ss,token,',');
-        minutesold=atoi(token.c_str());
+        minutesold=atof(token.c_str());
         //cout << "<br>debug:" << drawDiv();
 
 		}//end constructor
@@ -188,6 +189,7 @@ public:
 	string printData(void){
 
 		stringstream ss;
+		ss << setprecision(5);
 		ss << x << "," << y << "," << currf << "," << number << "," << daysold << "," << minutesold << endl;
 		return (ss.str());
 
@@ -235,10 +237,11 @@ public:
 class Lifespan{
 public:
 	vector <Day> days;
-	int maxlifespan;
+	float maxlifespan;
 	int n;
 	double mean;
 	double median;
+	vector <float> formedian; //death events
 
 
 	Lifespan(vector<Worm>  myworms){
@@ -246,7 +249,7 @@ public:
 		maxlifespan=0;
 		n=0;
 		double total=0;
-		vector<int> formedian;
+		
 
 		for (int i=0; i < myworms.size(); i++){
 			if (myworms[i].daysold > maxlifespan) maxlifespan = myworms[i].daysold;
@@ -274,14 +277,14 @@ public:
 
 
 
-		for (int i=0; i <= maxlifespan; i++){
+		for (int i=0; i <= (int)maxlifespan; i++){
 		     Day today = Day();
 
 		     for(int j=0; j < myworms.size(); j++){
-		    	 if (i==myworms[j].daysold) {
+		    	 if (i==(int)myworms[j].daysold) {
 		    		 today.numdead++;
 		    	 }//if died this day
-		    	 if (i < myworms[j].daysold){
+		    	 if (i < (int)myworms[j].daysold){
 		    		 today.numalive++;
 		    	 }//end if not dead yet
 
@@ -295,7 +298,16 @@ public:
 	string getOasisListHTML(void){
 		stringstream oss;
 		for(int i =0; i <= maxlifespan; i++){
-			oss << i << "\t" << days[i].numdead << endl;
+			oss << i << "," << days[i].numdead << endl;
+
+		}//end for each day
+		return (oss.str());
+	}//end get oasis list
+
+	string getOasisListFloat(void){
+		stringstream oss;
+		for(int i =0; i < formedian.size(); i++){
+			oss << formedian[i] << "," << 1 << endl;
 
 		}//end for each day
 		return (oss.str());
@@ -376,9 +388,9 @@ long getLifespan(string filename, long frametime){
 		}//end process experiment start time
 		if (i==11){
             daysold = atoi(inputline.c_str());
-            cout << "daysold:" << daysold << endl;
-            cout << "expstarttime:" << expstarttime << endl;
-            cout << "frametime:" << frametime << endl;
+            cout << "daysold," << daysold << endl;
+            cout << "expstarttime," << expstarttime << endl;
+            cout << "frametime," << frametime << endl;
              return (frametime-(expstarttime -(86400 * daysold)));
 
 		}//end process starting age
@@ -399,7 +411,7 @@ long getFileCreationTime(string filename){
 }//end getFileCreationTime
 
 
-int getAgeinDays(int framenum){
+float getAgeinDays(int framenum){
 
 	stringstream oss;
 	string fulldirectory;
@@ -414,7 +426,7 @@ int getAgeinDays(int framenum){
 		frametime = getFileCreationTime(ss.str());
 		ss.str("");
 		ss << fulldirectory << "description.txt";
-	return((getLifespan(ss.str(),frametime))/86400);
+	return(((float)(getLifespan(ss.str(),frametime)))/86400.0f);
 }//end getageinDays
 
 int getAgeinMinutes(int framenum){
@@ -434,7 +446,7 @@ int getAgeinMinutes(int framenum){
 		//debugger << "frametime: " << frametime;
 		ss.str("");
 		ss << fulldirectory << "description.txt";
-	return((getLifespan(ss.str(),frametime))/60);
+	return(((float)(getLifespan(ss.str(),frametime)))/60);
 }//end getageinDays
 
 
@@ -518,13 +530,16 @@ string printWormLifespan(string title){
 
 	Lifespan ls(wormlist);
 
-	oss << "N:" << ls.n <<  endl;
-		oss << "Mean: " << ls.mean <<  endl;
-		oss << "Median:" << ls.median << endl;
-		oss << "Max: " << ls.maxlifespan  << endl <<endl;
+	oss << "N," << ls.n <<  endl;
+		oss << "Mean, " << ls.mean <<  endl;
+		oss << "Median," << ls.median << endl;
+		oss << "Max, " << ls.maxlifespan  << endl <<endl;
 
 		oss << "%" <<  title << endl;
 	oss << ls.getOasisListHTML();
+	oss << "\n\n\n";
+	oss << "%" <<  title << endl;
+	oss << ls.getOasisListFloat();
 
 
 
@@ -539,6 +554,8 @@ string printWormLifespan(string title){
 
 //////////// M A I N
 int main(int argc,char **argv){
+
+	cout << setprecision(5);
 
 	getline(pathfile,datapath);
 	pathfile.close();
@@ -588,13 +605,13 @@ int main(int argc,char **argv){
 		      	  wormfile <<  v.second.get<int>("y") << ",";
 		      	  wormfile  <<  v.second.get<int>("deathframe") << ",";
 		      	  wormfile  <<  v.second.get<int>("number") << ",";
-		      	  if (v.second.get<int>("daysold") < 0 || v.second.get<int>("minutesold") < 0){
+		      	  if (v.second.get<float>("daysold") < 0 || v.second.get<float>("minutesold") < 0){
 		      	  //get the age of the deathframe
 		      		  wormfile <<   getAgeinDays(v.second.get<int>("deathframe")) << ",";
 		      		  wormfile <<   getAgeinMinutes(v.second.get<int>("deathframe")) << endl;
 		      	  }else {
-		      		wormfile << v.second.get<int>("daysold") << "," ;
-		      		wormfile << v.second.get<int>("minutesold") << endl;
+		      		wormfile << v.second.get<float>("daysold") << "," ;
+		      		wormfile << v.second.get<float>("minutesold") << endl;
 
 		      	  }//end else already found time of death
 

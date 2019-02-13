@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	if (!cgi("delete").empty()){	
 		int expToDelete = atoi(cgi("delete").c_str());
 		stringstream deleter;
-		deleter << "/usr/lib/cgi-bin/deleteexperiment " << expToDelete;
+		deleter << "/wormbot/cgi-bin/deleteexperiment " << expToDelete;
 		cout << "<H1>Deleting...</H1>\n";	
 		//if archive exists remove it		
 		stringstream delarch;	
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
 	if (!cgi("backup").empty()){	
 		int expToBackup = atoi(cgi("backup").c_str());
 		stringstream backer;
-		backer << "/usr/lib/cgi-bin/backupexperiment " << expToBackup;	
+		backer << "/wormbot/cgi-bin/backupexperiment " << expToBackup;	
 		cout << "<H1>Compressing...</H1>\n";
 		system(backer.str().c_str());
 	}

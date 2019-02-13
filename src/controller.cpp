@@ -83,6 +83,7 @@ using namespace LibSerial;
 
 #define ACCEPTABLE_JITTER 2
 #define JITTER_WAIT 500
+#define CALIBRATE_FREQ 36 //number of scans between calibration runs, 144 once per day
 
 
 
@@ -97,7 +98,7 @@ string logfilename = datapath + "/robot.log";
 ofstream logfile(logfilename.c_str(), ofstream::app);
 streambuf *coutbuf = std::cout.rdbuf(); //save old buf
 
-
+int calibration_counter=0;
 int currMonitorSlot;
 
 bool doDotFollow = false;
@@ -110,11 +111,27 @@ int iHighS = 255;
 int iLowV = 36;
 int iHighV = 255;
 
+
+
+//returns the number of seconds since midnight
+time_t getSecondsSinceMidnight() {
+    time_t t1, t2;
+    struct tm tms;
+    time(&t1);
+    localtime_r(&t1, &tms);
+    tms.tm_hour = 0;
+    tms.tm_min = 0;
+    tms.tm_sec = 0;
+    t2 = mktime(&tms);
+    return t1 - t2;
+}
+
+
 // calculates current monitor slot based on time of day
 int calcCurrSlot() {
-	struct timeval time;
-	gettimeofday(&time, NULL); // extract coordinated universal time
-	int currTime = (time.tv_sec - 25200) % SECONDS_IN_DAY; // get time of day, accounting for timezone
+	
+	int currTime = getSecondsSinceMidnight() ; // get time of day
+	//cout << "calccurrtime currtime =" << currTime << endl; 
 	return (int) ((double) currTime / SECONDS_IN_DAY * NUM_WELLS);
 }
 
@@ -688,7 +705,7 @@ public:
 	}
 
 
-	int captureVideo() {
+	int captureVideo(Timer* limitTimer) {
 
 		gotoWell();
 
@@ -708,6 +725,7 @@ public:
 
 		input.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_FRAME_WIDTH);
 		input.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_FRAME_HEIGHT);
+		setCameraSaturation(0);	
 
 		// open output
 		VideoWriter output;
@@ -724,7 +742,17 @@ public:
 		}
 
 		Timer videoTimer;
-		videoTimer.startTimer((long)VIDEO_DURATION);
+		//determine how much time is left before next timelapse scan
+		int maxVideoLength = limitTimer->getSeconds();
+		cout << "number of second available for video =" << maxVideoLength << endl;
+		
+
+		if (maxVideoLength < 30) { videoTimer.startTimer((long)30);}
+		else{		
+			if (maxVideoLength < VIDEO_DURATION) videoTimer.startTimer((long)maxVideoLength-20); 
+			else videoTimer.startTimer((long)VIDEO_DURATION);
+		}
+		
 
 
 		do {
@@ -975,7 +1003,7 @@ void scanExperiments(void) {
 
 bool addMonitorJob(Well* well) {
 	if (well->monitorSlot == MONITOR_STATE_START) {
-		// find open monitor slot
+		// find open monitor slot starting from the current time
 		int i = calcCurrSlot();
 		while (i < currMonitorSlot + NUM_WELLS) {
 			int thisSlot = i % NUM_WELLS;
@@ -983,10 +1011,10 @@ bool addMonitorJob(Well* well) {
 				monitorSlots[thisSlot] = well;
 				well->monitorSlot = thisSlot;
 				return true;
-			}
+			}//end if slot was empty
 			i++;
-		}
-	} else { // slot is already assigned
+		}//end while slots to scan through
+	} else { // slot was already assigned in joblist 
 		int slot = well->monitorSlot;
 		if (monitorSlots[slot] != NULL)
 			cout << "Monitor slot " << slot << " overwritten: two experiments assigned same slot" << endl;
@@ -1201,11 +1229,20 @@ void syncWithJoblist(bool init = false) {
 	close(fd);
 }
 
+const string getCurrTime() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+    return buf;
+}
+
 
 void writeToLog(string logline){
 	string fn = datapath + "/runlog";
 	ofstream ofile(fn.c_str(), std::ofstream::app);
-	ofile << logline << endl;
+	ofile << getCurrTime() << " " << logline << endl;
 	ofile.close();
 }
 
@@ -1275,7 +1312,7 @@ int main(int argc, char** argv) {
 	
 	cout << "OpenCV " << CV_MAJOR_VERSION << "." << CV_MINOR_VERSION << endl;
 	string arduinoport(PORT);
-	eraseLog();
+	//eraseLog();
 
 	cout << "********************************************************************" << endl;
 	cout << "Kaeberlein Robot controller" << endl
@@ -1291,6 +1328,10 @@ int main(int argc, char** argv) {
 	int portnum = 0;
 
 	int robotfound = 0;
+
+	
+
+	
 
 	ScanPort: while (!robotfound) {
 
@@ -1329,6 +1370,8 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < NUM_WELLS; i++) monitorSlots[i] = NULL;
 
 	currMonitorSlot = calcCurrSlot();
+	writeToLog("startup currMonitorSlot=");
+	writeToLog(boost::lexical_cast<string>(currMonitorSlot));
 
 	
 	string msg;
@@ -1354,6 +1397,17 @@ int main(int argc, char** argv) {
 
 		// Cycle through wells and take pictures
 		case ROBOT_STATE_SCANNING:
+		   {
+
+			if (calibration_counter++ > CALIBRATE_FREQ) {
+			msg = "Calibrating...";
+			cout << msg << endl;
+			writeToLog(msg);
+			sendCommand(String("CC")); //run axis calibration in firmware
+			calibration_counter=0; //reset the counter
+
+
+			}//end if need to calibrate
 
 			
 
@@ -1369,31 +1423,43 @@ int main(int argc, char** argv) {
 			// iterate over experiments
 			scanExperiments();
 
-			// zero the plotter
+			// zero the wormbot
 			sendCommand(machineZero);
 
-			// check monitor slot, accounting for error
-			if (currMonitorSlot >= calcCurrSlot() - 1 && currMonitorSlot <= calcCurrSlot() + 1) {
+			stringstream pdebg;
+			pdebg << "precondition currMonitorSlot=" << currMonitorSlot << " calcurrslot()=" << calcCurrSlot() << " \n";
+			writeToLog(pdebg.str());
+
+			
+				
+			// check monitor slot
+				//currMonitorSlot = calcCurrSlot();
 				Well* currWell = monitorSlots[currMonitorSlot];
+				stringstream debg;
+				debg <<	"True : currMonitorSlot=" << currMonitorSlot << " calcurrslot()=" << calcCurrSlot() << " \n";						
+				writeToLog(debg.str());
 				if (currWell != NULL) {
 					cout << "  capturing video for monitor slot " << currMonitorSlot
 						 << " (expID: " << currWell->expID << ")" << endl;
-					currWell->captureVideo();
+					currWell->captureVideo(&scanTimer);
 
 					// start video analysis
+					/*
 					stringstream cmd;
 					cmd << "sudo /usr/lib/cgi-bin/wormtracker " // location of wormtracker
 						<< currWell->directory << "/day" << currWell->getCurrAge()
 						<< ".avi" << " " // video file
 						<< currWell->directory // dir to put analysis data
 						<< " &"; // run process in background
-					system(cmd.str().c_str());
+					system(cmd.str().c_str());*/
+
 				} else {
 					cout << "  skip video for monitor slot " << currMonitorSlot
 						 << " (no well found)" << endl;
 				}
-				currMonitorSlot = (currMonitorSlot + 1) % NUM_WELLS;
-			}
+				if (++currMonitorSlot >= NUM_WELLS) currMonitorSlot=0; 
+				debg <<	" post capture currMonitorSlot=" << currMonitorSlot << " \n";
+			
 
 			// zero the plotter
 			sendCommand(machineZero);
@@ -1401,6 +1467,7 @@ int main(int argc, char** argv) {
 			robotstate = ROBOT_STATE_WAIT;
 
 			break; //end state scanning
+		  }
 
 
 		// robot is in between scans

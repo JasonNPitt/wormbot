@@ -1,0 +1,15 @@
+#!/bin/bash
+
+while true ; do
+	if ! pgrep controller > /dev/null ; then
+		sudo /wormbot/controller &
+	fi
+
+	if ! pgrep alignerd > /dev/null ; then
+		sudo /wormbot/alignerd /wormbot/ &
+	fi
+
+	sleep 30
+done
+
+

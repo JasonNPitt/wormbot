@@ -3,6 +3,8 @@
 sudo killall controllerd
 sudo killall controller
 sudo killall alignerd
+sudo killall master_control_program
+
 
 TESTING=false
 
@@ -27,12 +29,11 @@ then
 fi
 
 
-make all
 
 
 
 # move necessary files to root dir
-sudo cp generate_coordinates.py bin/alignerd bin/controller $ROOT_DIR
+sudo cp  experimentuploader.html  generate_coordinates.py bin/alignerd bin/controller wormbot_template.csv bin/master_control_program  $ROOT_DIR
 
 
 # move necessary files to web dir
@@ -42,9 +43,35 @@ sudo cp plateform.html $WEB_DIR
 
 # move necessary files to cgi-bin
 sudo cp data_path bin/experimentbrowser bin/marker bin/scheduler bin/cgiccretro bin/wormlistupdater bin/backupexperiment bin/deleteexperiment bin/wormbotstatus $CGI_DIR
+sudo cp ../ffmpeg-3.4/ffmpeg $CGI_DIR
+sudo cp data_path /usr/lib/cgi-bin #this is for compatibilty following security changes to move cgi bin into /wormbot
+
 
 # move retrograde files to the web html retrograde directory
 sudo cp -r retrograde/ /var/www/html/
 
+# move script for wormbot in command-line
+sudo cp bin/wormbot /bin
 
+#move launch script to /etc/rc.local
+echo "Overwriting /etc/rc.local"
+sudo head -n 1 /etc/rc.local > /tmp/temp.rc.local ; mv /tmp/temp.rc.local /etc/rc.local
+sudo echo "/wormbot/master_control_program" >> /etc/rc.local
+sudo echo "exit 0" >> /etc/rc.local
+sudo chmod +x /etc/rc.local
+sudo systemctl enable rc-local.service
+
+
+if $TESTING ;
+then
+	echo testing
+	cp -r test_data/* $ROOT_DIR/experiments
+	sudo echo 1 > $ROOT_DIR/experiments/currexpid.dat
+fi
+
+
+sudo chmod -R +rw $WEB_DIR
+
+sudo cp security/apache2.conf /etc/apache2/apache2.conf 
+sudo service apache2 restart
 

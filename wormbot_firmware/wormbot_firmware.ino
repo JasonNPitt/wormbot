@@ -119,9 +119,9 @@ void calibrate() {
   }//while not at x==max
   while (!yplimitSwitch.touched()){
     digitalWrite(stpPinY, HIGH);
-    delayMicroseconds(200);
+    delayMicroseconds(ms);
     digitalWrite(stpPinY, LOW);
-    delayMicroseconds(200);
+    delayMicroseconds(ms);
     curr_y++;
   }//while not at y==max
   
@@ -252,9 +252,7 @@ void move_to_xy(int x, int y) {
   boolean x_reached = (numStepsX == 0) || limitSwitchX.touched();
   boolean y_reached = (numStepsY == 0) || limitSwitchY.touched();
   
-  //while (!x_reached || !y_reached) {
-    
-    //if (!x_reached) {
+ 
     while(!x_reached) {
       int ms;
       if (i_x < numAccelSteps)                  ms = inverse[i_x];
@@ -272,7 +270,7 @@ void move_to_xy(int x, int y) {
     
     delay(175);
     
-    //if (!y_reached) {
+
     while (!y_reached) {
       int ms;
       if (i_y < numAccelSteps)                  ms = inverse[i_y];
@@ -288,7 +286,7 @@ void move_to_xy(int x, int y) {
       y_reached = (i_y == numStepsY) || limitSwitchY.touched();
     }
     
-  //}
+
   
   if (dx < 0) curr_x -= i_x;
   else        curr_x += i_x;
@@ -296,7 +294,7 @@ void move_to_xy(int x, int y) {
   if (dy < 0) curr_y -= i_y;
   else        curr_y += i_y;
   
-}
+}//end move to x y
 
 
 void move_to_x(int x) {
@@ -369,6 +367,9 @@ void loop(){
     } else 
     if  (inputString.indexOf("LL") >=0){
       goto_machine_max();
+    } else
+    if (inputString.indexOf("CC")>=0){
+	calibrate();
     } else
     if (inputString.indexOf("P")>=0){ 
       Serial.print (curr_x);

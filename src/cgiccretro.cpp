@@ -95,7 +95,7 @@ const Scalar SCALAR_RED = Scalar(0.0,0.0,255.0);
 
 int numworms=0; ///total number of worms
 int expID=0;    //the experiment ID
-int daysold=0;  //the worms' age in days for the start of the observations on wormbot
+//int daysold=0;  //the worms' age in days for the start of the observations on wormbot
 int lowthresh=0; //hold the lower threshold limit for the edge finding algo
 int highthresh=0; //hold the upper threshold limit for the edge finding algo
 
@@ -190,8 +190,8 @@ public:
 
 	int currframe;
 	int endframe;
-	int minutesold;
-	int daysold;
+	float minutesold;
+	float daysold;
 	long secondsold;
 
 
@@ -199,8 +199,8 @@ public:
 
 	void getLifespan(long secs){
 		secondsold=secs;
-		minutesold = secondsold / 60;
-		daysold = secondsold /86400;
+		minutesold = ((float)secondsold) / 60.0f;
+		daysold = ((float)secondsold) /86400.0f;
 	}//getLifespan
 
 	void setDeathFrame(int frameofdeath){
@@ -215,8 +215,9 @@ public:
 		midy = y + (h/2);
 
 		stringstream ss;
+		ss << setprecision(6);
 
-		ss << midx << "," << midy << "," << currframe << "," << n << "," << daysold << "," << minutesold << endl;
+		ss << midx << "," << midy << "," << currframe << "," << n << "," << daysold << "," << minutesold << ",fuckoff" << endl;
 
 		return ss.str();
 
@@ -240,7 +241,7 @@ public:
 
 			if (c > 100 && (*citer) < averageMass/2) goneCounter++;
 
-			if (goneCounter > MISSINGWORM_THRESHOLD){
+			if (goneCounter > MISSINGWORM_THRESHOLD || i<1){
 				getLifespan(ageOnFrame[i]);
 				setDeathFrame(frameIndexes[i]);
 				stringstream ss;
@@ -276,7 +277,6 @@ public:
 		Mat diffImage;
 		diffImage = img1 - img2; //absdiff
 		if (doStore)imwrite(path,diffImage);
-		imageSum = countNonZero(diffImage);
 		return imageSum;
 	}//end getdiffs
 
@@ -742,7 +742,7 @@ ofstream lifespanFile(ss.str().c_str());
 
 
 	   for (vector<WormRegion>::iterator citer = worms.begin(); citer != worms.end(); citer++){
-		   if((*citer).daysold == i) lifespan[i]++;
+		   if((int)(*citer).daysold == i) lifespan[i]++;
 	   }//end each worm
 	   lifespanFile << i << "\t" << lifespan[i] << endl;
    }//end for each day

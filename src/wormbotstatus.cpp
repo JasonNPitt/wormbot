@@ -65,7 +65,7 @@ logfile << "   <meta http-equiv=\"refresh\" content=\"10\">" << endl;
 logfile << "<body><pre>\n";		
 
 	stringstream commandlist;
-	commandlist << "ps -C \"controller,cgiccretro,alignerd,ffmpeg,backupexperiment,deleteexperiment\" -o comm,lstart > " << wormbottmp << endl;
+	commandlist << "ps -C \"controller,cgiccretro,alignerd,ffmpeg,backupexperiment,deleteexperiment,master_control_program\" -o comm,lstart > " << wormbottmp << endl;
 	system(commandlist.str().c_str());
 	
 	commandlist.str("");	
