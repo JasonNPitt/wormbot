@@ -97,6 +97,7 @@ int cameranum=0;
 string logfilename = datapath + "/robot.log";
 ofstream logfile(logfilename.c_str(), ofstream::app);
 streambuf *coutbuf = std::cout.rdbuf(); //save old buf
+string VERSION = "Release 1.01";
 
 int calibration_counter=0;
 int currMonitorSlot;
@@ -1315,7 +1316,7 @@ int main(int argc, char** argv) {
 	//eraseLog();
 
 	cout << "********************************************************************" << endl;
-	cout << "Kaeberlein Robot controller" << endl
+	cout << "Kaeberlein Robot controller " << VERSION << endl
 		 << "Jason N Pitt and Nolan Strait : Kaeberlein Lab : http://wormbot.org" << endl;
 	cout << "********************************************************************" << endl;
 

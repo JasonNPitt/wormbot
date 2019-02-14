@@ -441,6 +441,8 @@ void readDirectory(string fulldirectory){
 		numframes++;
 	}//end for each glob
 
+	if (numframes == 0) return;
+
 	//scan for aligned files
 	globpattern.str("");
 	globpattern  << fulldirectory.c_str() << string("aligned*.png");
