@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Building Updated Wormbot Applications"
+cat var/release
+make all
+
 sudo killall controllerd
 sudo killall controller
 sudo killall alignerd
