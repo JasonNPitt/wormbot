@@ -169,6 +169,10 @@ void setCameraSaturation(int sat){
 }//end setcameratocolor
 
 
+void writeToLog(string logline);
+
+
+
 
 class Timer {
 public:
@@ -745,8 +749,9 @@ public:
 		Timer videoTimer;
 		//determine how much time is left before next timelapse scan
 		int maxVideoLength = limitTimer->getSeconds();
-		cout << "number of second available for video =" << maxVideoLength << endl;
-		
+		stringstream vidtimeout;
+		vidtimeout << "number of second available for video =" << maxVideoLength << endl;
+		writeToLog(vidtimeout.str());
 
 		if (maxVideoLength < 30) { videoTimer.startTimer((long)30);}
 		else{		
@@ -1239,13 +1244,13 @@ const string getCurrTime() {
     return buf;
 }
 
-
 void writeToLog(string logline){
 	string fn = datapath + "/runlog";
 	ofstream ofile(fn.c_str(), std::ofstream::app);
 	ofile << getCurrTime() << " " << logline << endl;
 	ofile.close();
 }
+
 
 
 void eraseLog(void){
