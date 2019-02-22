@@ -748,7 +748,7 @@ public:
 
 		Timer videoTimer;
 		//determine how much time is left before next timelapse scan
-		int maxVideoLength = limitTimer->getSeconds();
+		int maxVideoLength = SCAN_PERIOD - limitTimer->getSeconds();
 		stringstream vidtimeout;
 		vidtimeout << "number of second available for video =" << maxVideoLength << endl;
 		writeToLog(vidtimeout.str());
