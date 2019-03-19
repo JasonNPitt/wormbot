@@ -170,6 +170,7 @@ void setCameraSaturation(int sat){
 
 
 void writeToLog(string logline);
+void setLamp(int intensity);
 
 
 
@@ -713,6 +714,7 @@ public:
 	int captureVideo(Timer* limitTimer) {
 
 		gotoWell();
+		setLamp(255);
 
 		// open input from camera
 		VideoCapture input(cameranum);
@@ -770,6 +772,7 @@ public:
 
 		} while (!videoTimer.checkTimer()); // stop recording at 5 minutes
 
+		setLamp(0);
 		return 0;
 	}
 
@@ -965,6 +968,12 @@ void raiseBeep(int pulses){
 	}//end for j
 }//end raise beep
 
+void setLamp(int intensity){
+	stringstream ls;
+	ls << "IL" << intensity;
+	sendCommand(ls.str());
+
+}//end set lamp
 
 void chordBeep(double octave){
 	stringstream beeper;
@@ -997,11 +1006,12 @@ void scanExperiments(void) {
 		Well* thisWell = *citer;
 		if (thisWell->status == WELL_STATE_ACTIVE && thisWell->timelapseActive) {
 			thisWell->gotoWell();
-
+			setLamp(255);
 			while (captured != 1) {
 				captured = thisWell->capture_frame(align);
 				
 			}
+			setLamp(0);
 		}
 	}
 }//end scanExperiments

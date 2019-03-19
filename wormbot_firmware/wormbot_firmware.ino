@@ -25,6 +25,8 @@ int stpPinX = mePort[PORT_1].s2;//the Step pin connect to Base Board PORT1 SLOT2
 int dirPinY = mePort[PORT_2].s1;
 int stpPinY = mePort[PORT_2].s2;
 
+int lampPin = 8; //orion port 4 black wire
+
 MeLimitSwitch xplimitSwitch(PORT_6,1);
 MeLimitSwitch xmlimitSwitch(PORT_6,2);
 MeLimitSwitch yplimitSwitch(PORT_3,1);
@@ -138,8 +140,8 @@ void goto_machine_zero(void){
   
   curr_x=0;
   curr_y=0;
-  Serial.println(curr_x);
-  Serial.println(curr_y);
+ // Serial.println(curr_x);
+ // Serial.println(curr_y);
   
 }//end goto maching zero
 
@@ -305,6 +307,13 @@ void move_to_y(int y) {
   move_to_xy(curr_x, y);
 }
 
+void setLamp(int intensity){
+  if (intensity >= 99) digitalWrite(lampPin, HIGH);
+  if (intensity <= 0) digitalWrite(lampPin,LOW);
+  
+  
+}//end setLamp
+
 
 void setup() {
   
@@ -315,6 +324,7 @@ void setup() {
   pinMode(stpPinX, OUTPUT);
   pinMode(dirPinY, OUTPUT);
   pinMode(stpPinY, OUTPUT);
+  pinMode(lampPin, OUTPUT);
   
   //initNormal();
   //initQuadratic();
@@ -370,6 +380,12 @@ void loop(){
     } else
     if (inputString.indexOf("CC")>=0){
 	calibrate();
+    } else
+    if (inputString.indexOf("IL") >=0){
+        String lightamount = inputString.substring(inputString.indexOf("IL")+2);
+        int lumos = lightamount.toInt();
+        setLamp(lumos);
+        
     } else
     if (inputString.indexOf("P")>=0){ 
       Serial.print (curr_x);
