@@ -25,7 +25,7 @@ int stpPinX = mePort[PORT_1].s2;//the Step pin connect to Base Board PORT1 SLOT2
 int dirPinY = mePort[PORT_2].s1;
 int stpPinY = mePort[PORT_2].s2;
 
-int lampPin = 8; //orion port 4 black wire
+int lampPin = 8; //orion port 7 black wire
 
 MeLimitSwitch xplimitSwitch(PORT_6,1);
 MeLimitSwitch xmlimitSwitch(PORT_6,2);
@@ -308,8 +308,9 @@ void move_to_y(int y) {
 }
 
 void setLamp(int intensity){
-  if (intensity >= 99) digitalWrite(lampPin, HIGH);
-  if (intensity <= 0) digitalWrite(lampPin,LOW);
+  //if (intensity >= 99) digitalWrite(lampPin, HIGH);
+ // if (intensity <= 0) digitalWrite(lampPin,LOW);
+   analogWrite(lampPin, intensity);
   
   
 }//end setLamp
