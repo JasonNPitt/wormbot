@@ -83,7 +83,7 @@ using namespace LibSerial;
 
 #define ACCEPTABLE_JITTER 2
 #define JITTER_WAIT 500
-#define CALIBRATE_FREQ 36 //number of scans between calibration runs, 144 once per day
+#define CALIBRATE_FREQ 1 //number of scans between calibration runs, 144 once per day
 
 
 

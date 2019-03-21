@@ -21,6 +21,7 @@
 #include <cgicc/Cgicc.h>
 #include <cgicc/HTTPHTMLHeader.h>
 #include <cgicc/HTMLClasses.h>
+#include <sys/statvfs.h>
 
 
 
@@ -32,6 +33,34 @@ using namespace cgicc;
 //globals
 Cgicc cgi;
 string datapath;
+
+
+string reportFreeSpace(string filename){
+
+
+ 	
+	struct statvfs buf;
+	string stringoutput;
+
+	if (!statvfs(filename, &buf)) {
+	unsigned long blksize, blocks, freeblks, disk_size, used, free;
+	 
+	blksize = buf.f_bsize;
+	blocks = buf.f_blocks;
+	freeblks = buf.f_bfree;
+	 
+	disk_size = blocks * blksize;
+	free = freeblks * blksize;
+	used = disk_size - free;
+	 
+	sprintf(stringoutput.c_str(),"Disk usage : %lu \t Free space %lu\n", used, free);} else {
+	sprintf(stringoutput.c_str(),"Couldn't get file system statistics\n");
+	}
+
+}
+
+
+
 
 int main(int argc, char **argv) {
 
@@ -110,6 +139,12 @@ cout << "</pre>" << endl;
 //check for server lock
 cout << "retrorunning:" << retrorunning << "<BR>" << endl;
 cout << "islocked:" << islocked << "<BR>" << endl;
+
+cout << "<h3> Free Disk Space Available: <P> " << endl;
+
+string joblist("/wormbot/RRRjoblist.csv");
+cout << reportFreeSpace(joblist) << endl;
+
 
 
 
