@@ -16,6 +16,7 @@
 #include <utime.h>
 #include <fstream>
 #include <cstdio>
+#include <cstring>
 #include <unistd.h>
 #include <cgicc/CgiDefs.h>
 #include <cgicc/Cgicc.h>
@@ -38,12 +39,18 @@ string datapath;
 string reportFreeSpace(string filename){
 
 
- 	
-	struct statvfs buf;
-	string stringoutput;
+ 	stringstream returnstring;
 
-	/*if (!statvfs(filename, &buf)) {
-	unsigned long blksize, blocks, freeblks, disk_size, used, free;
+	struct statvfs buf;
+	char cfilename[1024];
+	
+	char stringoutput[1024];
+	strcpy(cfilename, filename.c_str());
+	float freegb;
+
+	
+	if (!statvfs(cfilename, &buf)) {
+	unsigned long long blksize, blocks, freeblks, disk_size, used, free;
 	 
 	blksize = buf.f_bsize;
 	blocks = buf.f_blocks;
@@ -52,10 +59,18 @@ string reportFreeSpace(string filename){
 	disk_size = blocks * blksize;
 	free = freeblks * blksize;
 	used = disk_size - free;
+
+	
+
+	freegb = (float)free/(float)1000000000;
 	 
-	//sprintf(stringoutput.c_str(),"Disk usage : %lu \t Free space %lu\n", used, free);} else {
-	//sprintf(stringoutput.c_str(),"Couldn't get file system statistics\n");
-	}*/
+	sprintf(stringoutput,"Disk usage : %lu \t Free space %lu\n", used, free);} else {
+	sprintf(stringoutput,"Couldn't get file system statistics\n");
+	}
+
+	returnstring << stringoutput <<  "<P>GB Free:" << freegb << endl;
+
+	return returnstring.str();
 
 }
 
