@@ -42,7 +42,7 @@ string reportFreeSpace(string filename){
 	struct statvfs buf;
 	string stringoutput;
 
-	if (!statvfs(filename, &buf)) {
+	/*if (!statvfs(filename, &buf)) {
 	unsigned long blksize, blocks, freeblks, disk_size, used, free;
 	 
 	blksize = buf.f_bsize;
@@ -53,9 +53,9 @@ string reportFreeSpace(string filename){
 	free = freeblks * blksize;
 	used = disk_size - free;
 	 
-	sprintf(stringoutput.c_str(),"Disk usage : %lu \t Free space %lu\n", used, free);} else {
-	sprintf(stringoutput.c_str(),"Couldn't get file system statistics\n");
-	}
+	//sprintf(stringoutput.c_str(),"Disk usage : %lu \t Free space %lu\n", used, free);} else {
+	//sprintf(stringoutput.c_str(),"Couldn't get file system statistics\n");
+	}*/
 
 }
 
