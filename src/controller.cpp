@@ -83,7 +83,7 @@ using namespace LibSerial;
 
 #define ACCEPTABLE_JITTER 2
 #define JITTER_WAIT 500
-#define CALIBRATE_FREQ 1 //number of scans between calibration runs, 144 once per day
+#define CALIBRATE_FREQ -1 //number of scans between calibration runs, 144 once per day
 
 
 
@@ -97,7 +97,7 @@ int cameranum=0;
 string logfilename = datapath + "/robot.log";
 ofstream logfile(logfilename.c_str(), ofstream::app);
 streambuf *coutbuf = std::cout.rdbuf(); //save old buf
-string VERSION = "Release 1.01";
+string VERSION = "Release 1.03";
 
 int calibration_counter=0;
 int currMonitorSlot;
@@ -1323,6 +1323,8 @@ int main(int argc, char** argv) {
 	string camera;
 	string machineZero("ZZ");
 	string machineMax("LL");
+	string machineCalibrate("CC");
+	string machineQCCal("QC");
 	string machineRestX("MX150");
 	string machineRestY("MY150");
 	
@@ -1415,12 +1417,17 @@ int main(int argc, char** argv) {
 		case ROBOT_STATE_SCANNING:
 		   {
 
+			
+			raiseBeep(3);
+
+			scanTimer.startTimer((long) SCAN_PERIOD);			
+
 			if (calibration_counter++ > CALIBRATE_FREQ) {
-			msg = "Calibrating...";
-			cout << msg << endl;
-			writeToLog(msg);
-			sendCommand(String("CC")); //run axis calibration in firmware
-			calibration_counter=0; //reset the counter
+				msg = "Calibrating...";
+				cout << msg << endl;
+				writeToLog(msg);
+				sendCommand(String("CC")); //run axis calibration in firmware
+				calibration_counter=0; //reset the counter
 
 
 			}//end if need to calibrate
@@ -1431,9 +1438,7 @@ int main(int argc, char** argv) {
 			cout << msg << endl;
 			writeToLog(msg);
 
-			raiseBeep(3);
-
-			scanTimer.startTimer((long) SCAN_PERIOD);
+			
 			
 
 			// iterate over experiments
@@ -1441,7 +1446,10 @@ int main(int argc, char** argv) {
 
 			// zero the wormbot
 			sendCommand(machineZero);
+			//sendCommand(String("CC")); //just calibrate it instead
+			
 
+	
 			stringstream pdebg;
 			pdebg << "precondition currMonitorSlot=" << currMonitorSlot << " calcurrslot()=" << calcCurrSlot() << " \n";
 			writeToLog(pdebg.str());
