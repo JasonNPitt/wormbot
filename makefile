@@ -43,7 +43,10 @@ wormlistupdater: src/wormlistupdater.cpp
 experimentuploader: src/experimentuploader.cpp
 	$(CXX) $(CFLAGS) src/experimentuploader.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/experimentuploader
 
-all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus experimentuploader
+movietracker: src/movietracker.cpp
+	$(CXX) $(CFLAGS) src/movietracker.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/movietracker
+
+all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus experimentuploader movietracker
 
 
 clean:

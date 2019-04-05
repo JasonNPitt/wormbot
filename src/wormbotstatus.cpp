@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
 	  readpath >> datapath;
 
 
-string fn = datapath + "status.html";
+string fn = datapath + "ostatus.html";
 string lockname = datapath + "serverlock.lock";
 string wormbottmp(datapath + "tmpwormbotstatus");
 string aline; 
@@ -103,10 +103,16 @@ ofstream logfile(fn.c_str());
 
 	  
 
-logfile << HTTPHTMLHeader() << endl;
-logfile << html() << head(title("Wormbot Status")) << endl;
-logfile << "   <meta http-equiv=\"refresh\" content=\"10\">" << endl;
-logfile << "<body><pre>\n";		
+cout << HTTPHTMLHeader() << endl;
+cout << html() << head(title("Wormbot Status")) << endl;
+cout << "   <meta http-equiv=\"refresh\" content=\"10\">" << endl;
+cout << "<body>\n";
+
+logfile << "<pre>";		
+
+string linkfn = datapath + "status.html";
+ifstream linkfile(linkfn.c_str());
+cout << linkfile.rdbuf();
 
 	stringstream commandlist;
 	commandlist << "ps -C \"controller,cgiccretro,alignerd,ffmpeg,backupexperiment,deleteexperiment,master_control_program\" -o comm,lstart > " << wormbottmp << endl;
@@ -146,10 +152,14 @@ logfile << "<body><pre>\n";
 
 logfile.close();
 
+
+
 ifstream stat(fn.c_str());
 
 cout << stat.rdbuf();
 cout << "</pre>" << endl;
+
+
 
 //check for server lock
 cout << "retrorunning:" << retrorunning << "<BR>" << endl;

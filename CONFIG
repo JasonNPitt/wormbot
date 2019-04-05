@@ -47,6 +47,7 @@ sudo chmod a+rw $ROOT_DIR/currexpid.dat
 # move necessary files to web dir
 sudo cp -r img $WEB_DIR/img
 sudo cp plateform.html $WEB_DIR
+sudo cp www/html/status.html $WEB_DIR
 
 
 # move necessary files to cgi-bin
