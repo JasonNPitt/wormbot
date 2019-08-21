@@ -46,7 +46,10 @@ experimentuploader: src/experimentuploader.cpp
 movietracker: src/movietracker.cpp
 	$(CXX) $(CFLAGS) src/movietracker.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/movietracker
 
-all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus experimentuploader movietracker
+graphmaker: src/graphmaker.cpp
+	$(CXX) $(CFLAGS) src/graphmaker.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/graphmaker
+
+all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus experimentuploader movietracker graphmaker
 
 
 clean:

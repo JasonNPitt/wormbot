@@ -3,8 +3,31 @@
 <body>
 <form action="/cgi-bin/graphmaker" method="post" enctype="multipart/form-data">
 <H1>Group </h1>
-<H3>Enter Experiment IDs, seperated by commas, ranges are valid ie (126,878-900,513,515,900-910)</h3>
-<input type="text" name="experiments">
+<H3>Enter Experiment IDs, seperated by spaces, ranges are valid ie (126 878-900 513 515 900-910)</h3>
+<input type="text" name="experiments" size="500">
+<P>
+Use Minutes instead of Days for survival curve<input type="checkbox" name="useMinutes"><P>
+Use Experiment ID as OASIS title<input type="checkbox" name="useIDs"><P><HR>meta data comment outputs<P>
+Output Title <input type="checkbox" name="0"><P>
+Output Email <input type="checkbox" name="1"><P>
+Output Investigator <input type="checkbox" name="2"><P>
+Output Description <input type="checkbox" name="3"><P>
+Output Unix epoch start time <input type="checkbox" name="4"><P>
+Output Last frame number <input type="checkbox" name="5"><P>
+Output Strain <input type="checkbox" name="6"><P>
+Output Directory <input type="checkbox" name="7"><P>
+Output User provided starting N <input type="checkbox" name="8"><P>
+Output Starting age <input type="checkbox" name="9"><P>
+Output Experiment ID <input type="checkbox" name="10"><P>
+Output Plate Number <input type="checkbox" name="11"><P>
+Output Well <input type="checkbox" name="12"><P>
+Output N <input type="checkbox" name="13"><P>
+Output Mean Lifespan <input type="checkbox" name="14"><P>
+Output Median Lifespan <input type="checkbox" name="15"><P>
+Output Maximum Lifespan <input type="checkbox" name="16"><P>
+
+<P>
+
 <input type="submit">
 </html>
 

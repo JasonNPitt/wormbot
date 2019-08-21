@@ -2,6 +2,8 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/replace.hpp>
+
 
 #include <cgicc/CgiDefs.h>
 #include <cgicc/Cgicc.h>
@@ -37,6 +39,25 @@
 #define AGE 10
 #define STRAIN 11
 
+//field order for LIFESPAN CSV
+#define L_TITLE 0
+#define L_EMAIL 1
+#define L_INVESTIGATOR 2
+#define L_DESCRIPTION 3
+#define L_STARTTIME 4
+#define L_LASTFRAME 5
+#define L_STRAIN 6
+#define L_DIRECTORY 7
+#define L_STARTN 8
+#define L_STARTAGE 9
+#define L_EXPID 10
+#define L_PLATENUM 11
+#define L_WELL 12
+#define L_N 13
+#define L_MEAN 14
+#define L_MEDIAN 15
+#define L_MAX 16
+#define MAXOUTFLAGS 17
 
 
 using namespace std;
@@ -89,331 +110,6 @@ XYpair getXYpair(string queryline) {
 	return(found);
 }
 
-long getNewExpID(void) {
-	int fetchID;
-	long expID;
-
-	string filename;
-	filename = datapath + string("currexpid.dat");
-
-	ifstream ifile(filename.c_str());
-	ifile >> expID;
-	expID++;
-	ifile.close();
-
-	ofstream ofile(filename.c_str());
-	ofile << expID << endl;
-	ofile.close();
-
-	return (expID);
-}
-
-
-vector<int> readOpenPlates(void){
-	string inputfilename("RRRjoblist.csv");
-	inputfilename = datapath + inputfilename;
-     ifstream ifile(inputfilename.c_str());
-     vector<int> openplates;
-
-     for (int i=1; i <13; i++){
-    	 openplates.push_back(i);
- //   	 cout << "add" << i;
-
-     }//end pushback all of plates
-
-
-     string inputline;
-     string header;
-      cout << hr()<< b("CURRENTLY ACTIVE EXPERIMENTS:") << br() << h2("select a checkbox to stop an experiment")<< br()<< endl;
-      cout << "<div style=\"height:200px;color:white;background-color:crimson;border:1px solid#ccc; overflow:auto;\">" << endl;
-
-     string token;
-     getline(ifile,header);
-     vector <int> platesinuse;
-     while (getline(ifile, inputline)){
-    	 stringstream ss(inputline);
-    	 int status=0;
-    	 int plate=0;
-    	 string email;
-    	 string investigator;
-    	 string title;
-    	 string description;
-    	 string directory;
-    	 string wellname;
-    	 string activeTimelapse;
-     	 string activeDailyMonitor;
-    	 long expID=0;
-
-//            cout << "inputline:" << inputline << endl;
-    	 	 	 	 getline(ss, token, ',');
-    	       		 expID = atol(token.c_str());
-     				 getline(ss, token, ',');
-      				 status = atoi(token.c_str());
-     				 getline(ss, token, ',');
-     				 plate = atoi(token.c_str());
-
-     				 getline(ss, wellname, ',');
-     				 getline(ss, token, ',');
-     				 //xval = atoi(token.c_str());
-     				 getline(ss, token, ',');
-     				 //yval = atoi(token.c_str());
-     				 getline(ss, directory, ',');
-     				getline(ss, activeTimelapse, ',');
-      				 getline(ss, activeDailyMonitor, ',');
-     				 getline(ss, email, ',');
-     				 getline(ss, investigator, ',');
-     				 getline(ss, title, ',');
-     				 getline(ss, description, ',');
-
-     //				 cout << "status" << status << endl;
-     				 if (status){
-     					 platesinuse.push_back(plate);
-     					 cout << br() << endl;
-     					 stringstream  expValue;
-     					 expValue << expID;
-     					 cout << "<input type=\"checkbox\" name=\"" << expValue.str().c_str()<<"\">"  <<endl;
-     					 cout << b("expID:") << expID << b(" plate:") << plate << b(" well:")<<wellname <<b(" investigator:")<<investigator<< b(" title:")<<title<< " "<<description << endl;
-     					 cout << "<a href=\"/cgi-bin/marker?loadedexpID=" << expID <<"\" > ANALYZE </a>";
-     					 cout << b("VERIFY STOP") << "<input type=\"checkbox\" name=\"v" << expValue.str().c_str()<<"\">" << hr() <<endl;
-     				 }//end if active plate
-
-     }//end while lines in file
-     cout << "</div>" << endl;
-     vector<int> returnplates;
-     //remove used plates
-     for (vector<int>::iterator citer = openplates.begin(); citer != openplates.end(); citer++){
-         int matched=0;
-    	 for (vector<int>::iterator jiter = platesinuse.begin(); jiter != platesinuse.end(); jiter++){
-     //  		 cout << "platesinuse" << (*jiter) << endl;
-    		 if ((*citer)==(*jiter)){
-
-       			matched=1;
-
-       			}
-
-         }//end for
-    	 if (!matched) returnplates.push_back(*citer);
-
-     }//end for each plate
-     return (returnplates);
-
-}//readOpenPlates
-
-void processDeletes(void){
-	 string inputfilename("RRRjoblist.csv");
-	 inputfilename = datapath + inputfilename;
-	 ifstream ifile(inputfilename.c_str());
-	 string header;
-	 string inputline;
-	 string token;
-	 bool experimentstodelete = false;
-
-	 stringstream ss;
-
-	 vector<long> totalexperiments;
-	 vector<string> deletedexperiments;
-
-	 getline(ifile,header);
-
-	      while (getline(ifile, inputline)){
-	     	 stringstream ss(inputline);
-	     	 int status=0;
-	     	 int plate=0;
-	     	 string email;
-	     	 string investigator;
-	     	 string title;
-	     	 string description;
-	     	 string directory;
-	     	 string wellname;
-	     	 string activeTimelapse;
-	     	 string activeDailyMonitor;
-	     	 long expID=0;
-
-	 //            cout << "inputline:" << inputline << endl;
-	     	 	 	 	 getline(ss, token, ',');
-	     	       		 expID = atol(token.c_str());
-	      				 getline(ss, token, ',');
-	       				 status = atoi(token.c_str());
-	      				 getline(ss, token, ',');
-	      				 plate = atoi(token.c_str());
-
-	      				 getline(ss, wellname, ',');
-	      				 getline(ss, token, ',');
-	      				 //xval = atoi(token.c_str());
-	      				 getline(ss, token, ',');
-	      				 //yval = atoi(token.c_str());
-	      				 getline(ss, directory, ',');
-	      				 getline(ss, activeTimelapse, ',');
-	      				 getline(ss, activeDailyMonitor, ',');
-	      				 getline(ss, investigator, ',');
-	      				 getline(ss, title, ',');
-	      				 getline(ss, description, ',');
-
-	      //				 cout << "status" << status << endl;
-	      				 if (status){
-	      					 totalexperiments.push_back(expID);
-
-
-	      				 }//end if active plate add to experiments
-
-	      }//end while lines in file
-	      ifile.close();
-
-	      vector<long> purgeIDs;
-
-
-	      for (vector<long>::iterator citer = totalexperiments.begin(); citer != totalexperiments.end(); citer++){
-	    	  int todelete=0;
-	    	  stringstream sss;
-	    	  sss << (*citer);
-	    	  todelete = cgi.queryCheckbox(sss.str());
-	    	     if( todelete ) {
-
-	    	    	 stringstream ssss;
-	    	    	 ssss  << "v" << (*citer);
-
-	    	    	 if(cgi.queryCheckbox(ssss.str())) {
-
-	    	    		 purgeIDs.push_back((*citer)); //if both boxes checked delete it
-	    	    		 experimentstodelete=true;
-	    	    	 }
-
-	    	     }//if delete selected
-
-	      }//end for totalexperiments
-	      if (experimentstodelete){
-	    	  stringstream mover;
-	    	  mover << "mv " << datapath << "RRRjoblist.csv "<< datapath <<"RRRold.csv";
-	    	  system(mover.str().c_str());
-	    	  string oldfilename;
-	    	  oldfilename = datapath + string("RRRold.csv");
-	    	  ifstream oldfile(oldfilename.c_str());
-	    	  ofstream outfile(inputfilename.c_str());
-	    	  string readline;
-              getline(oldfile,readline);
-	    	   //move header;
-               //indicate the update
-	    	  outfile << "UPDATE," << readline << endl;
-
-
-              deleted:
-	    	  while(getline(oldfile,readline)){
-
-	    		  stringstream myss(readline);
-	    		  getline(myss, token, ',');
-	    		  long thisexpID;
-	    		  thisexpID = atol(token.c_str());
-
-	    	  	      for (vector<long>::iterator citer = purgeIDs.begin(); citer != purgeIDs.end(); citer++){
-                         // cout << "purgeID: " << (*citer) << "thisexpID:" << thisexpID << endl;
-	    	  	    	  if (thisexpID == (*citer)){
-                        	 // cout << "TRUE";
-                        	  deletedexperiments.push_back(readline);
-                        	  goto deleted;
-                          }//end if found a match
-	    	  	      }//end for each to delete
-	    	  	      outfile << readline << endl;
-	    	  }//end while loop
-
-	    	  for (vector<string>::iterator citer = deletedexperiments.begin(); citer != deletedexperiments.end(); citer++){
-	    		  string exp;
-	    		  string remainder;
-	    		  stringstream dss((*citer));
-	    		  getline(dss, exp, ','); //save the expID
-	    		  getline(dss,token,','); //discard the old status
-	    		  getline(dss,remainder); //save the rest
-	    		  outfile << exp << ","<< WELL_STATE_STOP << "," << remainder << endl;
-
-	    	  }//end for each deleted experimetn
-
-	    	  outfile.close();
-
-	    	 // sortJobList();
-
-	     }//end if need to delete
-
-
-
-
-	   cout << "<br/>\n";
-}//end processDeletes
-
-void sortJobList(void){
-
-	vector<string> wellorder;
-	vector<wellSort> wellsToSort;
-
-
-		string filename;
-		filename = datapath + string("platecoordinates.dat");
-		ifstream ifile(filename.c_str());
-		string readline;
-
-		string token;
-
-		while (getline(ifile,readline)){
-			stringstream awell(readline);
-			string thewell;
-			getline(awell,thewell,',');
-
-			wellorder.push_back(thewell);
-
-		}//end while lines in the file
-
-
-		string inputfilename("RRRjoblist.csv");
-	    inputfilename = datapath + inputfilename;
-		ifstream wellfile(inputfilename.c_str());
-
-		string header; //save the header
-		getline(wellfile,header);
-		string aline;
-		while (getline(wellfile,aline)){
-			stringstream linestream(aline);
-			string plate;
-			string well;
-			string junk;
-			getline(linestream,junk,','); //discard expID
-			getline(linestream,junk,','); //discard state
-			getline(linestream,plate,','); //fetch plate
-			getline(linestream,well,','); //fetch well
-
-			stringstream query;
-			query  << plate  << well;
-
-
-			wellSort thiswellsort;
-			thiswellsort.welldataline = aline;
-
-			for (int i =0; i < wellorder.size(); i++){
-				if (wellorder[i].find(query.str()) != std::string::npos){
-					thiswellsort.rank=i;
-					break;
-				}//end if found the well
-			}//end for each line in wellorder
-			wellsToSort.push_back(thiswellsort);
-
-
-		}//end while lines in the joblist
-
-		std::sort(wellsToSort.begin(),wellsToSort.end());
-
-		string outputfile("RRRjoblist.csv");
-		outputfile = datapath + outputfile;
-		ofstream ofile(outputfile.c_str());
-
-		ofile << header << endl;
-		for (int i=0;  i < wellsToSort.size(); i++){
-			ofile << wellsToSort[i].welldataline << endl;
-		}//end for each well
-		ofile.close();
-
-
-
-
-
-
-}//end sortJobList
 
 string removeNastiness(string jerky){
 
@@ -429,304 +125,70 @@ string removeNastiness(string jerky){
  return (jerky);
 }//end removeNastiness
 
-void processInput(void){
-	// Print out the submitted element
-	stringstream iss;
-	stringstream dump;
-	int plate;
-	bool doUpdate=false;
-	plate = atoi(cgi("plate").c_str());
-
-	for (int i=0; i <12; i++){
-		iss.str(""); //clear stream
-		iss << "active" <<i;
-		stringstream oss;
-		string dailymonitorcheck;
-		dailymonitorcheck=string("adm") + boost::lexical_cast<string>(i);
-
-		if (cgi.queryCheckbox(iss.str()) || cgi.queryCheckbox(dailymonitorcheck)){///\ if timelapse or monitor is setup then activate a new experiment
-			doUpdate=true;
-			string namevalue;
-			stringstream findcoor;
-			//build new line
-			long expID;
-			expID = getNewExpID();
-			oss << expID << ",";
-			oss << WELL_STATE_START << ",";
-			oss << plate << ",";
-			findcoor << plate; //save the value to find the x,y coordinates
-			namevalue = "";
-			namevalue =string("row") + boost::lexical_cast<string>(i);
-			oss << removeNastiness(cgi(namevalue));
-			findcoor << removeNastiness(cgi(namevalue));
-			namevalue = "";
-			namevalue ="well" + boost::lexical_cast<string>(i);
-			oss << removeNastiness(cgi(namevalue)) << ",";
-			findcoor << removeNastiness(cgi(namevalue));
-			XYpair thisxy;
-			thisxy = getXYpair(findcoor.str());
-			oss << thisxy.x << ",";
-			oss << thisxy.y << ",";
-			string makedir;
-			//expID and datapath is not read from form it is safe for system
-			makedir = string("mkdir ") + datapath  + boost::lexical_cast<string>(expID);
-			system(makedir.c_str()); //make the directory  ...should probably add error checking here
-			oss << datapath << expID <<"/,"; //print the directory
-			namevalue="";
-			namevalue ="active" + boost::lexical_cast<string>(i);
-			if (cgi.queryCheckbox(namevalue)) oss << TIMELAPSE_ON << ","; else oss << TIMELAPSE_OFF << ",";
-			namevalue="";
-			namevalue ="adm" + boost::lexical_cast<string>(i);
-			if (cgi.queryCheckbox(namevalue)) oss << DAILY_MONITOR_ON << ","; else oss << DAILY_MONITOR_OFF << ",";
-			namevalue = "";
-			namevalue ="email" + boost::lexical_cast<string>(i);
-			oss << removeNastiness(cgi(namevalue)) << ",";
-			namevalue = "";
-			namevalue ="investigator" + boost::lexical_cast<string>(i);
-			oss << removeNastiness(cgi(namevalue)) << ",";
-			namevalue = "";
-			namevalue ="title" + boost::lexical_cast<string>(i);
-			oss << removeNastiness(cgi(namevalue)) << ",";
-			namevalue = "";
-			namevalue ="description" + boost::lexical_cast<string>(i);
-			oss << removeNastiness(cgi(namevalue)) << ",";
-			namevalue = "";
-			namevalue ="startn" + boost::lexical_cast<string>(i);
-			oss << removeNastiness(cgi(namevalue)) << ",";
-			namevalue = "";
-			namevalue ="startage" + boost::lexical_cast<string>(i);
-			oss << removeNastiness(cgi(namevalue)) << ",";
-			int startingage = atoi(string(cgi(namevalue)).c_str()); ///store the starting age to add it to the day counter
-			namevalue = "";
-			namevalue ="strain" + boost::lexical_cast<string>(i);
-			oss << removeNastiness(cgi(namevalue)) << ",";
-			oss << "0,";  //write out the curr frame ZERO
-
-			// write out current time
-			time_t t;
-			time(&t);
-			oss << t;
-
-			dump << oss.str() << endl;
-		}//end if box active
-
-	}//end for each well in a plate
-
-	if (doUpdate){
-		 string inputfilename("RRRjoblist.csv");
-		 inputfilename = datapath + inputfilename;
-		 ofstream ofile(inputfilename.c_str(), std::ios::app); //append new data to the oldfile
-		 string outline;
-		 while (getline(dump,outline)){
-			 ofile << outline << endl;
-		 }//end while lines to dump
-
-		 ofile.close();
-
-
-
-		 ifstream ifile(inputfilename.c_str()); //append new data to the oldfile
-
-		 string header;
-		 stringstream os;
-
-		 getline(ifile,header);
-		 os<< "UPDATE," + header << endl;
-		 while (getline(ifile,outline)){
-			 os << outline << endl;
-		 }//end while lines to dump
-
-		 ifile.close();
-
-		 ofstream wfile(inputfilename.c_str()); //overwrite oldfile
-		 string sendline;
-		 while (getline(os,sendline)){
-			 wfile << sendline << endl;
-		 }//end while lines to dump
-
-		 wfile.close();
-		// sortJobList();
-	}//end if doUpdate
 
 
 
 
 
+void dumpLifespan(long expID, bool useMin, bool useIDs, vector<int> fieldoutputs){
+	int linecounter =0; //used to avoid % in description fields
+	stringstream filename;
+	stringstream metaouts;
+	string meanline;
+	string nline;
+	filename << datapath << expID << "/lifespanoutput_" << expID << ".csv";	
+	ifstream ifile(filename.str().c_str());
+	//cout << filename.str() << "<P>" << endl;
+	if (!ifile) {
+		cout << "# lifespan data for experimentID " << expID << " was not found" << endl;
+	}//end if file not found	
 
+	string line;
+	bool isMinutes=false;
+	bool firstpass=true;
+	bool doDump=false;
+	bool foundsecond=false;
 
-}//end process input
-
-void processALine(string csvdataline){
-	string token;
-	stringstream ss(csvdataline); //inputline
-	stringstream oss;		//outputline
-	
-
-	long expID;
-	expID = getNewExpID(); //fetch an experiment ID
-	oss << expID << ",";   //print the expID
-	oss << WELL_STATE_START << ","; //set the state to start
+	while (getline(ifile, line)){
+		for (vector<int>::iterator citer = fieldoutputs.begin(); citer != fieldoutputs.end(); citer++){
+		 	if (linecounter == (*citer)) metaouts << "#" << line << endl; //dump the line to stringstream 		
+		}//end for each requested output field		
+		linecounter++;
 		
-	int fieldcount=0;
-	int plate;
-	string therow;
-	while(getline(ss,token,',') ){
-	
-		
-		switch (fieldcount){
-			case PLATE:
-				{
-				plate = atoi(token.c_str());
-				oss << plate << ",";
-				}
-			break;
-
-			case ROW:
-				{
-				therow=token;
-				oss << therow; //merge with well no ,
-				}
-			break;
-
-			case WELL:
-				{
-				int wellnum=atoi(token.c_str());
-				oss << wellnum << ",";
-				//get coordinates
-				stringstream findit;
-				findit << plate << therow << wellnum;
-				XYpair thisxy;
-				thisxy = getXYpair(findit.str());
-				oss << thisxy.x << ",";
-				oss << thisxy.y << ",";
-				string makedir;
-				//expID and datapath is not read from form it is safe for system
-				makedir = string("mkdir ") + datapath  + boost::lexical_cast<string>(expID);
-				system(makedir.c_str()); //make the experiment directory  ...should probably add error checking here
-				oss << datapath << expID <<"/,"; //print the directory
-				}
-			break;
-
-			case TIMELAPSE:
-				{
-				if (token.find("1") != std::string::npos) oss << TIMELAPSE_ON << ","; else oss << TIMELAPSE_OFF << ",";
-				}
-			break;
-
-			case DAILYMONITOR:
-				{			
-				if (token.find("1") != std::string::npos) oss << DAILY_MONITOR_ON << ","; else oss << DAILY_MONITOR_OFF << ",";
-				}
-			break;
-
-			case STARTN:
-			case AGE:
-				{
-				int n=atoi(token.c_str());
-				oss << n << ",";
-				}
-			break;
-
-			case EMAIL:
-			case TITLE:
-			case DESCRIPTION:
-			case INVESTIGATOR:
-			case STRAIN:
-				{
-				oss << token << ",";
-				}
-			break;
-
-
-
-		}//end switch
+		bool descriptorLine=false;
+		if (line.find('%') != string::npos && firstpass && linecounter > MAXOUTFLAGS) {
+			firstpass=false;
+			if(!useMin)doDump = true;
+			descriptorLine=true;
+		}//end if found the first oasis descriptor
+		else if (line.find('%') != string::npos && !firstpass){
+			descriptorLine=true;
+			foundsecond=true;
+			if (!useMin)
+				return; else doDump=true;
+		} //end if found the second oasis descriptor
+		boost::replace_all(line, ",", "\t");
+		if (doDump){
+			if (descriptorLine && useIDs){
+			   cout << "%" << expID << endl;
+			   cout <<  metaouts.str();
+			   
+			} else{
+				cout << line << endl;
+				if (descriptorLine) cout <<  metaouts.str();				 
 				
-			
+			}
+		}//end if dump
 
-		
+	}//end while lines in the file
 
-		fieldcount++;
-	}//while fields in the line
-
-	oss << "0,";  //write out the curr frame ZERO
-
-	// write out current time
-	time_t t;
-	time(&t);
-	oss << t;
-
-	externaldump << oss.str() << endl;
-	
-
-
-}//end processALine
-
-
-
-void processCSVFile(string inputfilename){
-	string fileline;
-	ifstream ifile(inputfilename.c_str());
-	if (!ifile.is_open()) {cout << "<h1>READ FILE FAILED!!!</h1>\n"; return;} //throw error if file not opened
-	int lcount=0;	
-	int expcounter =0;
-	while (getline(ifile,fileline)){
-		if (lcount>0){	//ingnore the template first line
-			if (fileline.find("plate number") != std::string::npos) {;} // ignore template headers
-			else { //not a template header try to process it
-				processALine(fileline);
-				expcounter++;
-			}  
-
-
-		}//if not on the first line
-		lcount++;
-	}//end while lines in the file	
-	ifile.close();
-
-	cout << "<h1>" << expcounter << "experiments added<br></h1>" << endl; 
-
-
-
-	 string jobfilename("RRRjoblist.csv");
-	 jobfilename = datapath + jobfilename;
-	 ofstream ofile(jobfilename.c_str(), std::ios::app); //append new data to the oldfile
-	 string outline;
-	 while (getline(externaldump,outline)){
-		 ofile << outline << endl;
-	 }//end while lines to dump
-
-	 ofile.close();
-
-
-
-	 ifstream iofile(jobfilename.c_str()); //read in the file to append the new header
-
-	 string header;
-	 stringstream os;
-
-	 getline(iofile,header);
-	 os<< "UPDATE," + header << endl;
-	 while (getline(iofile,outline)){
-		 os << outline << endl;
-	 }//end while lines to dump
-
-	 iofile.close();
-
-	 ofstream wfile(jobfilename.c_str()); //overwrite oldfile
-	 string sendline;
-	 while (getline(os,sendline)){
-		 wfile << sendline << endl;
-	 }//end while lines to dump
-
-	 wfile.close();
-
-
-
-}//end processCSVFile
+}//end dumpLifespan
 
 
 int main(int argc, char **argv) {
 	try {
+
+		vector<int> outputflags;
 
 		ifstream readpath("data_path");
 
@@ -739,8 +201,15 @@ int main(int argc, char **argv) {
 		cout << HTTPHTMLHeader() << endl;
 
 		// Set up the HTML document
-		cout << html() << head(title("WormBot Upload Complete")) << endl;
+		cout << html() << head(title("WormBot GraphMaker Output")) << endl;
 		cout << body() << endl;
+
+		cout << br() <<endl;
+		cout << img().set("src", "/wormbot/img/Bender.png").set("width","300") << endl;
+		cout << br() <<endl;
+
+		
+		cout << "Oasis Output=" "<P><pre>" << endl;
 
 
 		
@@ -748,47 +217,59 @@ int main(int argc, char **argv) {
 		stringstream restorecommand;
 
 
-		int setID =-1;
+		stringstream expparser;
 
-		setID = atoi(cgi("uploadID").c_str()); //atoi protects system call
+		bool useMinutes =false;
+		bool preDead = false;
+		bool useIDs= false;
 
-		stringstream uploadfilename;
+		useMinutes=cgi.queryCheckbox("useMinutes");
+		useIDs= cgi.queryCheckbox("useIDs");
 
-		uploadfilename << "/tmp/" << setID << ".tar.gz"; //set temp name for tarball
+		for (int i=0; i < MAXOUTFLAGS; i++) {
+			stringstream checkbx;
+			checkbx << i;
+			if (cgi.queryCheckbox(checkbx.str())) outputflags.push_back(i);
+		}//end scan flags
+		
+		expparser << cgi("experiments"); 
+		string atoken;
+		while (getline(expparser,atoken,' ')){
+			
+			if (atoken.find("-") != string::npos) {
+				vector<string> ids;
+				boost::split(ids,atoken,boost::is_any_of("-"));
+				for (long i=atol(ids[0].c_str()); i <= atol(ids[1].c_str()); i++){
+					dumpLifespan(i,useMinutes, useIDs, outputflags);
+				}//end for each id in range	
+			} //end if found a range
+			else dumpLifespan(atol(atoken.c_str()),useMinutes, useIDs,outputflags);
+			
+			cout << "<P>" << endl;
+
+			
+
+		}//end while experiments in list
 
 		
-		ofstream outputexperiment(uploadfilename.str().c_str());  //a file to dump the upload to
-		const_file_iterator file = cgi.getFile("experiments"); //read in the file
-		file->writeToStream(outputexperiment); //save it to the tmp directory
-		outputexperiment.close();
-
 
 		
-		cout << "filename=" << file->getFilename() <<  "<P>" << endl;
+		
 		
 		 
 
-		restorecommand << "tar -xvf /tmp/" << setID << ".tar.gz -C /";
-
 		
-		system(restorecommand.str().c_str()); //call system to execute the tar command
-
-		cout << " <h1>upload complete <h1> " << endl;
 		
 
 
-		cout << br() <<endl;
-		cout << img().set("src", "/wormbot/img/Bender.png").set("width","300") << endl;
-		cout << br() <<endl;
-		cout << "<h3>Status</h3>";
-
-		cout << "Experiment ID" << setID << " Uploaded <P>";
+		
+		
 
 		
 	
 		
 		// Close the HTML document
-		cout << body() << html();
+		cout << "</pre> " << body() << html();
 
 	} catch(exception& e) {
 		// handle any errors - omitted for brevity
