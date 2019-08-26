@@ -605,15 +605,10 @@ int main(int argc,char **argv){
 		      	  wormfile <<  v.second.get<int>("y") << ",";
 		      	  wormfile  <<  v.second.get<int>("deathframe") << ",";
 		      	  wormfile  <<  v.second.get<int>("number") << ",";
-		      	  if (v.second.get<float>("daysold") < 0 || v.second.get<float>("minutesold") < 0){
-		      	  //get the age of the deathframe
+		      	 
 		      		  wormfile <<   getAgeinDays(v.second.get<int>("deathframe")) << ",";
 		      		  wormfile <<   getAgeinMinutes(v.second.get<int>("deathframe")) << endl;
-		      	  }else {
-		      		wormfile << v.second.get<float>("daysold") << "," ;
-		      		wormfile << v.second.get<float>("minutesold") << endl;
-
-		      	  }//end else already found time of death
+		      	 
 
 
 		   }//end boostforeach
