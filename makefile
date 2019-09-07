@@ -43,8 +43,8 @@ wormlistupdater: src/wormlistupdater.cpp
 experimentuploader: src/experimentuploader.cpp
 	$(CXX) $(CFLAGS) src/experimentuploader.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/experimentuploader
 
-movietracker: src/movietracker.cpp
-	$(CXX) $(CFLAGS) src/movietracker.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/movietracker
+movietracker: src/plateExplorer.cpp
+	$(CXX) $(CFLAGS) src/plateExplorer.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/plateExplorer
 
 graphmaker: src/graphmaker.cpp
 	$(CXX) $(CFLAGS) src/graphmaker.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/graphmaker
