@@ -123,6 +123,7 @@ int main(int argc, char* argv[])
     string TrackbarName1 = "Canny High";
     string TrackbarName2 = "Canny Low";
     int high_slider;
+	int learningrate=75; //default
     
     createTrackbar( TrackbarName1, "Simple Ass BS", &cannyHigh, 255, on_trackbar );
 	    createTrackbar( TrackbarName2, "Simple Ass BS", &cannyLow, 255, on_trackbar );
@@ -172,6 +173,11 @@ int main(int argc, char* argv[])
 			cannyHigh = atoi(argv[i+1]);
 		break;
 
+		case 'r':
+		case 'R':
+			learningrate = atoi(argv[i+1]);
+		break;
+
 			
 
 	}//end argument swtch
@@ -184,7 +190,7 @@ int main(int argc, char* argv[])
 	for (int i=startday; i <= endday; i++){
 		stringstream ms;
 		ms << apath.str() << "day" << i << ".avi";
-	        processVideo(ms.str(), 75,i,maxframes);
+	        processVideo(ms.str(), learningrate,i,maxframes);
 	}//end for each day
 
 	

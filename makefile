@@ -25,6 +25,9 @@ colorpicker: src/colorpicker.cpp
 experimentbrowser: src/experimentbrowser.cpp
 	$(CXX) $(CFLAGS) src/experimentbrowser.cpp -lcgicc -o bin/experimentbrowser
 
+backcatalog: src/backcatalog.cpp
+	$(CXX) $(CFLAGS) src/backcatalog.cpp -lcgicc -o bin/backcatalog
+
 wormbotstatus: src/wormbotstatus.cpp
 	$(CXX) $(CFLAGS) src/wormbotstatus.cpp -lcgicc -o bin/wormbotstatus
 
@@ -43,13 +46,13 @@ wormlistupdater: src/wormlistupdater.cpp
 experimentuploader: src/experimentuploader.cpp
 	$(CXX) $(CFLAGS) src/experimentuploader.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/experimentuploader
 
-movietracker: src/plateExplorer.cpp
+plateExplorer: src/plateExplorer.cpp
 	$(CXX) $(CFLAGS) src/plateExplorer.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/plateExplorer
 
 graphmaker: src/graphmaker.cpp
 	$(CXX) $(CFLAGS) src/graphmaker.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/graphmaker
 
-all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus experimentuploader movietracker graphmaker
+all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus experimentuploader plateExplorer graphmaker backcatalog
 
 
 clean:
