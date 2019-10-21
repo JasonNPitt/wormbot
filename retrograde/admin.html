@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <script type="text/javascript" src="//code.jquery.com/jquery-1.9.1.js"></script>
+
+  
+    <link rel="stylesheet" type="text/css" href="/css/result-light.css">
+  
+
+  <style type="text/css">
+    body{ background-color: ivory; }
+#canvas{border:1px solid black;}
+button {margin-top: 20px;
+line-height: 40px;
+font-weight: bold;
+padding: 20 20px;
+}
+
+#btn {
+  border: none;
+  outline: none;
+  padding: 10px 12px;
+  color: #fff;
+}
+
+.btn-open {
+  background-color: green;
+}
+
+.btn-locked {
+  background-color: red;
+}
+
+  </style>
+
+  <title>Retrograde Lifespan Scorer</title>
+
+
+
+
+
+<script type="text/javascript">
+
+
+
+
+function pad(num) {
+    var s = "000000" + num;
+    return s.substr(s.length-6);
+}
+
+
+//GLOBALS
+
+var filename = "";      //frame filename
+var img = new Image(); //frame
+var framenumber=0; //hold the currently displayed frame number
+var expID = 0;
+var lowthresh=0;
+var highthresh=0;
+var serverLocked= false; //the server busy lock
+var totalframes =0; //hold the total number of frames from description.txt
+var lifespanrequested = false;  //hold a flag to see if you asked for the lifespan to be updated
+
+
+//define rectangle object
+var rect = {x:0,y:0,w:0,h:0,f:0};
+var rects = [];
+var deadworm = {x:0,y:0,deathframe:0,number:0,daysold:-1,minutesold:-1};
+var deadworms = [];
+var numrects =0;
+var ctx;
+var needtounlock=false;
+var wormlist = [];
+
+function drawRects(){
+	for (i=0; i< rects.length; i++ ){
+		ctx.strokeRect(rects[i].x, rects[i].y, rects[i].w, rects[i].h);
+	}
+}
+
+function drawDeadworms(){
+	console.log("drawingdeadworms");
+	console.log("deadworms.length=" + deadworms.length);
+	//if (deadworms==null) return;
+	for (i=0; i < deadworms.length; i++){
+		//is worm visible
+		if(framenumber >= deadworms[i].deathframe){
+			
+			ctx.beginPath();
+		       	ctx.strokeStyle = "red";
+			ctx.lineWidth = 3;
+			ctx.arc(deadworms[i].x,deadworms[i].y,30, 0, 2 *Math.PI,0);
+			ctx.stroke();
+			ctx.font = "30px Arial";
+			ctx.fillStyle = "black";
+			ctx.fillText(i,deadworms[i].x, deadworms[i].y);
+		       	ctx.strokeStyle = "green";
+		
+		}//end if worm has died	
+		
+	}//end for each deadworm
+}//end drawdeadworms
+
+
+function drawExpID(){
+	ctx.font = "30px Arial";
+	ctx.fillStyle = "cyan";
+	ctx.fillText("ExpID = " + expID, 30, 30);
+}//end drawExpID
+    
+function drawFramenum(){
+	ctx.font = "30px Arial";
+	ctx.fillStyle = "magenta";
+	ctx.fillText("Frame = " + framenumber, 30, 60);
+}//end drawFramenum
+
+
+function killWorm(tx,ty){
+	var thiswormnum;
+	if (tx == undefined || ty== undefined) return;
+	if (deadworms == undefined) thiswormnum=0; else thiswormnum=deadworms.length; 
+	var thisworm = {x:tx,y:ty,deathframe:framenumber,number:thiswormnum,daysold:-1, minutesold:-1};
+	deadworms.push(thisworm);
+	console.log("made worm num " + deadworms.length + " at " + tx + "," + ty + "," + framenumber);
+
+}//end killworm
+
+function getFileDate(filename){
+	var xhr = $.ajax({
+    		url: filename,
+   		 success: function(response) {
+    		    console.log( "last modified: " + xhr.getResponseHeader("Last-Modified"));
+   		 }
+	});
+}//end function getfiledate
+
+
+function LoadWormList(){
+	var eachworm;
+	var rnum = Math.random();
+        filename = "/wormbot/" + expID +"/wormlist.csv?v="+ rnum; 
+        $.ajax({
+                url:filename,
+                success: function (data){
+			if (data.length < 1) return;
+			if (deadworms.length > 0){ console.log("erase deadworms length=" + deadworms.length); while (deadworms.length >0) deadworms.pop();}
+			
+                        eachworm=data.split('\n');
+			console.log("eachworm.length:" + eachworm.length);
+                        for (i=0; i < eachworm.length; i++) {
+				var thisworm;				
+				console.log("eachworm["+ i + ":" + eachworm[i]);
+				thisworm=eachworm[i].split(',');
+				if (thisworm.length < 5) continue;
+				var wormstruct = {x:parseInt(thisworm[0]),y:parseInt(thisworm[1]),deathframe:parseInt(thisworm[2]),number:parseInt(thisworm[3]),daysold:parseFloat(thisworm[4]),minutesold:parseFloat(thisworm[5])};
+				console.log(wormstruct);				
+				deadworms.push(wormstruct);
+				console.log("i=" + i);
+				console.log("load worms deadworms length:" + deadworms.length);
+				getFileDate(filename);		
+			}//end for each worm line
+			doUpdateWormList();
+				
+                }
+        });
+
+
+}//end load wormlist
+
+
+
+function LoadFrame(){
+	if (framenumber <0) framenumber=0;
+	if (framenumber >999999) framenumber =999999;
+        filename = "/wormbot/" + expID + "/aligned" + pad(framenumber) + ".png";
+        img.src = filename;
+	img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+                };
+
+
+        drawRects();
+	drawDeadworms();
+	drawExpID();
+    drawFramenum();
+
+}//end load frame
+
+
+
+
+
+document.onkeydown = function (e) {
+  
+    switch (e.key) {
+        case 'ArrowUp':
+  		e.preventDefault();
+		console.log("arrowup");
+		framenumber+=10;
+		if (framenumber >= totalframes) framenumber = totalframes-1;
+		LoadFrame();
+            // up arrow
+            break;
+        case 'ArrowDown':
+            // down arrow
+		e.preventDefault();
+		console.log("arrowdwn");
+		framenumber-=10;
+		if (framenumber < 0) framenumber =0;
+		LoadFrame();
+            break;
+        case 'ArrowLeft':
+            // left arrow
+		e.preventDefault();
+		framenumber--;
+		if (framenumber < 0) framenumber =0;
+		LoadFrame();
+		console.log("arrowLeft");
+
+            break;
+        case 'ArrowRight':
+            // right arrow
+		e.preventDefault();
+		framenumber++;
+		if (framenumber >= totalframes) framenumber = totalframes-1;
+		LoadFrame();
+		console.log("arrowright");
+		
+    }
+};
+
+
+function getLastFile(){
+	var lines;
+	filename = "/wormbot/" + expID +"/description.txt";
+	$.ajax({
+    		url:filename,
+    		success: function (data){
+			lines=data.split('\n');
+			for (i=0; i < lines.length; i++) {console.log("line["+ i + ":" + lines[i]);}
+				framenumber=lines[6];
+				totalframes=framenumber;
+				console.log("last frame is: " + framenumber);
+				framenumber = framenumber-1; //off by one
+				LoadFrame();
+
+				return lines[6];
+    			}
+  	});
+	//return the 6th line which holds the lastframe
+}//end getLastFile
+
+
+function checkLock(){
+//check the server lock to see if it's ready
+$.ajax({
+    url:'/wormbot/serverlock.lock',
+    type:'HEAD',
+    error: function()
+    {
+	 serverLocked=false;
+	 $('#btn').addClass("btn-open");
+	 $('#btn').removeClass("followed btn-locked");
+    	 $('#btn').html("Server Ready");
+	if (needtounlock){
+		LoadWormList();
+		needtounlock=false;
+	}
+
+    },
+    success: function()
+    {
+        serverLocked=true;
+        $('#btn').addClass("followed btn-locked");
+        $('#btn').html("Processing...Please wait");
+	//needtounlock=true;
+
+    }
+});
+
+
+}//end checkLock
+
+
+function getMousePos(canvas, evt){
+	var brect= canvas.getBoundingClientRect();
+	return {
+	x: evt.clientX - brect.left,
+	y: evt.clientY - brect.top
+	};
+
+}//end get mouse position
+
+
+
+function popContourPreview() {
+   var rnum = Math.random();
+   var url= "/wormbot/" + expID + "/current_contrast.png?v=" +  rnum ;
+   window.open(url,'Image','width=1920,height=1080,resizable=1');
+}
+
+
+
+function deleteObject(x,y){
+	//scan through objects and delete them if found to have middle clicked on them
+	var i=0;
+	for (i=0; i< rects.length; i++ ){
+		if (x > rects[i].x && x < rects[i].x + rects[i].w 
+		    && y > rects[i].y && y < rects[i].y + rects[i].h){
+		rects.splice(i,1);
+		return;
+
+		}//end if hit the rectangle		
+	}
+	var j=0;	
+	
+	console.log("deadworms length:" + deadworms.length);
+	console.log("delete obj x,y:" + x +"," + y);
+
+	for (j=0; j < deadworms.length; j++){
+		
+		
+
+                if (x > (deadworms[j].x -20) && x < (deadworms[j].x + 20)  && y > (deadworms[j].y -20) && y < (deadworms[j].y + 20)){
+		console.log("deleted j:" + j);
+                deadworms.splice(j,1);
+                return;
+
+                }//end if hit the rectangle             
+        }
+
+
+
+
+}//end delete object
+
+function makeDataPanel(){
+	 var leftDiv = document.createElement("div"); //Create left div
+        leftDiv.id = "left"; //Assign div id
+        leftDiv.setAttribute("style", "float:left; width:25%; line-height: 26px; text-align:left; font-size:16pt; padding-left:8px; height:26px;"); 
+        leftDiv.style.background =  "#999999";
+
+	 var leftDiv2 = document.createElement("div"); //Create left div
+        leftDiv2.id = "left"; //Assign div id
+        leftDiv2.setAttribute("style", "float:left; width:25%; line-height: 26px; text-align:left; font-size:16pt; padding-left:8px; height:26px;"); 
+        leftDiv2.style.background =  "#CCCCCC";
+
+        a = document.createElement('a');
+	var rnum = Math.random();
+        a.href =  '/wormbot/' + expID + "/" + expID + ".avi?v=" + rnum;
+	a.innerHTML = "Download Current Movie"
+	leftDiv.appendChild(a);
+	document.body.appendChild(leftDiv);
+ 	b = document.createElement('a');
+        b.href =  '/wormbot/' + expID + "/lifespanoutput_" + expID + ".csv?v=" + rnum;
+	b.innerHTML = "Download Current Data"
+    	leftDiv2.appendChild(b);
+    	document.body.appendChild(leftDiv2);
+}
+
+
+function doUpdateWormList(){
+
+	var deadwormsstring = JSON.stringify(deadworms);
+	var formE1 = document.forms.updateForm;
+	var formData = new FormData(formE1);
+	var startmovie = formData.get('moviestart');
+	var stopmovie = formData.get('moviestop');
+	var checkboxbuildmovie = formData.get('buildMovie');
+	highthresh = formData.get('upperthresh');
+	lowthresh = formData.get('lowerthresh');
+	var checkboxUpdateContours = formData.get('updatecontours');
+
+
+	$.ajax({
+                	type : "POST",
+                	url  : "/cgi-bin/wormlistupdater",
+                	data : { "deadworms" : deadwormsstring, "expID": expID,"startmovie":startmovie, "stopmovie":stopmovie, 
+				"buildMovie":checkboxbuildmovie, "highthresh":highthresh,
+				"lowthresh":lowthresh, 	"checkboxUpdateContours":checkboxUpdateContours,
+				"currframe":framenumber},
+                	success : function (){
+
+                    		//alert(data);
+				alert("Worm List Updated");
+
+                		}
+                });
+	
+
+
+
+}//end dod updatewormlist
+
+
+
+
+$(window).load(function(){
+
+
+
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+var myVar;
+
+function myFunction() {
+    myVar = setInterval(checkLock, 10000);
+}
+
+
+myFunction();
+//check to see if the server is busy with a job
+checkLock();
+
+
+
+//setup the buttons
+var delBtn = document.createElement("button");
+var deleteTxt = document.createTextNode("Update Server Data");
+delBtn.appendChild(deleteTxt);
+
+var lifespanBtn = document.createElement("button");
+var lifespanTxt = document.createTextNode("Get Lifespan");
+lifespanBtn.appendChild(lifespanTxt);
+lifespanBtn.id="lifespan";
+
+
+var gotoBtn = document.createElement("button");
+var gotoTxt = document.createTextNode("Goto Frame");
+gotoBtn.appendChild(gotoTxt);
+
+var cropBtn = document.createElement("button");
+var cropTxt = document.createTextNode("Censor Frames");
+cropBtn.appendChild(cropTxt);
+
+
+//prompt for initial values
+
+ expID = prompt("Enter the experiment ID");
+ lowthresh = prompt("Enter the lower brightness threshold 0-255",80);
+ highthresh = prompt("Enter the upper brightness threshold 0-255",210);
+
+//should go to last frame
+ getLastFile();
+
+//load the exisiting wormlist
+LoadWormList();
+
+//add buttons 
+var body = document.getElementsByTagName("body")[0];
+body.appendChild(delBtn);
+body.appendChild(lifespanBtn);
+body.appendChild(gotoBtn);
+body.appendChild(cropBtn);
+
+
+
+
+
+
+
+
+delBtn.addEventListener("click", function(){
+	var deadwormsstring = JSON.stringify(deadworms);
+	var formE1 = document.forms.updateForm;
+	var formData = new FormData(formE1);
+	var startmovie = formData.get('moviestart');
+	var stopmovie = formData.get('moviestop');
+	var checkboxbuildmovie = formData.get('buildMovie');
+	highthresh = formData.get('upperthresh');
+	lowthresh = formData.get('lowerthresh');
+	var checkboxUpdateContours = formData.get('updatecontours');
+
+
+	$.ajax({
+                	type : "POST",
+                	url  : "/cgi-bin/wormlistupdater",
+                	data : { "deadworms" : deadwormsstring, "expID": 			 					expID,"startmovie":startmovie, "stopmovie":stopmovie, 
+				"buildMovie":checkboxbuildmovie, "highthresh":highthresh,
+				"lowthresh":lowthresh, 					"checkboxUpdateContours":checkboxUpdateContours,
+				"currframe":framenumber},
+                	success : function (){
+
+                    	//alert(data);
+			alert("Worm List Updated");
+
+                	}
+                });
+	});
+
+gotoBtn.addEventListener("click", function(){
+		framenumber = prompt("Goto Frame Number");	
+		img.onload = function() {
+	    		ctx.drawImage(img, 0, 0);
+			};
+		filename = "/wormbot/" + expID + "/aligned" + pad(framenumber) + ".png"; 
+		img.src = filename;
+		drawRects();
+
+	});//end add event listener
+
+cropBtn.addEventListener("click", function(){
+	       cropStart = prompt("First frame to crop/censor");
+	       cropEnd = prompt("Last frame to crop/censor");
+		if (cropStart && cropEnd)
+	       $.ajax ({
+			 type : "POST",
+		                url  : "/cgi-bin/cropFrames",
+		                data : { "cropStart" : cropStart,"cropEnd" : cropEnd, "expID" : expID},
+		                success : function (data){
+
+		                alert(data);
+				//document.location.reload();
+				}
+		
+	}); //end crop event listener
+    }//end function
+	);
+
+lifespanBtn.addEventListener("click", function(){
+		     if (serverLocked==false){
+		     	var outputRects = JSON.stringify(rects);
+		     	$.ajax({
+		        	type : "POST",
+		        	url  : "/cgi-bin/cgiccretro",
+		        	data : { "name" : outputRects,"expID" : expID, "lowthresh" : lowthresh, "highthresh":highthresh},
+		        	success : function (data){
+
+		            	alert(data);
+
+		        	}
+		        });
+			serverLocked=true;
+			$('#btn').addClass("followed btn-locked");
+			$('#btn').html("Processing...Please wait");	
+			needtounlock=true;
+
+		     }//end if not locked
+
+	}//end function
+	);
+
+makeDataPanel();
+
+
+// get references to the canvas and context
+var canvas = document.getElementById("canvas");
+ctx = canvas.getContext("2d");
+
+
+// style the context
+ctx.strokeStyle = "green";
+ctx.lineWidth = 3;
+
+
+
+// this flage is true when the user is dragging the mouse
+var isDown = false;
+
+// these vars will hold the starting and present mouse position
+var startX;
+var startY;
+var mouseX;
+var mouseY;
+
+
+
+	function handleMouseDown(e) {
+	    e.preventDefault();
+	    e.stopPropagation();
+	
+	    var brect = canvas.getBoundingClientRect();
+
+	    
+	    switch(e.which){
+
+	    case 1:   //left mouse button down
+		// save the starting x/y of the rectangle
+		startX = parseInt(e.clientX - brect.left);
+		startY = parseInt(e.clientY - brect.top);
+
+		isDown=true; //dragging a rectangle
+		break;
+	    case 2:  //middle mouse button down
+		//console.log("middle mouse pressed");
+			deleteObject(parseInt(e.clientX - brect.left),parseInt(e.clientY - brect.top));
+
+		break;
+	    case 3: //right mouse button down
+		//console.log("right mouse pressed");
+		killWorm(parseInt(e.clientX - brect.left),parseInt(e.clientY - brect.top));
+
+		break;	
+
+
+	    }//end switch	
+
+	}
+
+	function addNewRect(){
+		isDown = false;
+		numrects++;
+		//standardize the rect to positive width and height
+		var swap=0;
+		if (mouseX - startX < 0) {
+			swap=startX;
+			startX=mouseX;
+			mouseX=swap;
+		} 
+		if (mouseY - startY < 0) {  
+		        swap=startY;
+		        startY=mouseY;
+		        mouseY=swap;
+		} 
+
+	  var newRect = {name:numrects,x:startX,y:startY,w:mouseX-startX,h:mouseY-startY,f:framenumber};
+	  rects.push(newRect);
+	}//end new rect
+
+/*
+function removeLastWorm(){
+	numrects--;
+	rects.pop();
+}//end remove last worm
+*/
+
+	function handleMouseUp(e) {
+	    e.preventDefault();
+	    e.stopPropagation();
+
+	    // the drag is over, clear the dragging flag
+	    switch (e.which){
+		case 1:  // left mouse button
+			addNewRect();
+			break;
+		case 2: //middle mouse button
+			// clear the canvas
+			  ctx.drawImage(img,0,0);
+			  drawRects();
+			  drawDeadworms();		
+			break;
+
+		case 3: //right mouse button
+			break;
+
+		}//end switch
+	}
+
+
+
+
+	function handleMouseOut(e) {
+	    e.preventDefault();
+	    e.stopPropagation();
+
+	    // the drag is over, clear the dragging flag
+		isDown=false;
+
+
+	}
+
+
+
+
+	function handleMouseMove(e) {
+	    e.preventDefault();
+	    e.stopPropagation();
+
+	    var brect = canvas.getBoundingClientRect();
+
+
+	    // get the current mouse position
+	    mouseX = parseInt(e.clientX - brect.left);
+	    mouseY = parseInt(e.clientY - brect.top);
+
+	    // mouse pos debugging	
+	    // var mouseOutput = "mouse.x:" + mouseX + " mouse.y:" + mouseY;
+	   //  console.log(mouseOutput);
+
+
+	    // clear the canvas
+	  ctx.drawImage(img,0,0);
+	  
+
+
+	    // calculate the rectangle width/height based
+	    // on starting vs current mouse position
+	    var width = mouseX - startX;
+	    var height = mouseY - startY;
+
+	    // draw a new rect from the start position 
+	    // to the current mouse position
+	    if (isDown) ctx.strokeRect(startX, startY, width, height);
+	    drawRects();
+	    drawDeadworms();	
+	    drawExpID();   
+        drawFramenum();
+	    
+
+	}//end mouse move
+
+
+	//listen for keyboard events
+
+	// listen for mouse events
+	$("#canvas").mousedown(function (e) {
+	    handleMouseDown(e);
+	});
+	$("#canvas").mousemove(function (e) {
+	    handleMouseMove(e);
+	});
+	$("#canvas").mouseup(function (e) {
+	    handleMouseUp(e);
+	});
+	$("#canvas").mouseout(function (e) {
+	    handleMouseOut(e);
+	});
+
+
+}); //end onload
+
+
+
+
+
+
+</script>
+
+  
+</head>
+
+<body>
+  <h4>Left click to drag rectangles around corpses for time of death estimation.  Right click to enter time of death.  Middle click on a marker to delete it.<BR> Arrow keys move through stack.  Right and left go forward or backwards 1 frame.  Up and down arrows go forward or backwards 10 frames</h4>
+<canvas id="canvas" width=1920 height=1080></canvas>
+ <P> 
+<button id="btn" class="btn-open">Server Ready</button>
+  <script>
+  // tell the embed parent frame the height of the content
+ // if (window.parent && window.parent.parent){
+   // window.parent.parent.postMessage(["resultsFrame", {
+     // height: document.body.getBoundingClientRect().height,
+     // slug: "None"
+   // }], "*")
+  //}
+</script>
+
+<a href='javascript:;' onclick='popContourPreview();'>Preview contour</a>
+<form action="" method="post" id = "updateForm">
+Movie Start<input type="text" id = "startmovie" name="moviestart"> | Movie End<input type="text" id="stopmovie" name="moviestop"> | Check to build new movie<input type="checkbox" id="buildMovie" name="buildMovie"> <br>Lower threshold<input type="text" id = "lowerthresh" name="lowerthresh"> | Upper Threshold<input type="text" id="upperthresh" name="upperthresh"> | Check to update contour thresholds<input type="checkbox" id="updatecontours" name="updatecontours"></form>
+</body>
+
+</html>
+
+

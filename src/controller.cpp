@@ -504,6 +504,11 @@ public:
 		ofile << "****************************************************************\n";
 		ofile << "::br::" << endl;
 		ofile.close();
+
+		//change write permissions on descriptionfile so www-data can write to it
+		stringstream chs;
+		chs << "chmod a+wr " << filename << endl; 
+		system(chs.str().c_str());
 	}
 
 

@@ -43,6 +43,9 @@ cgiccretro: src/cgiccretro.cpp
 wormlistupdater: src/wormlistupdater.cpp
 	$(CXX) $(CFLAGS) src/wormlistupdater.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/wormlistupdater
 
+cropFrames: src/cropFrames.cpp
+	$(CXX) $(CFLAGS) src/cropFrames.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/cropFrames
+
 experimentuploader: src/experimentuploader.cpp
 	$(CXX) $(CFLAGS) src/experimentuploader.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/experimentuploader
 
@@ -52,7 +55,8 @@ plateExplorer: src/plateExplorer.cpp
 graphmaker: src/graphmaker.cpp
 	$(CXX) $(CFLAGS) src/graphmaker.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/graphmaker
 
-all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus experimentuploader plateExplorer graphmaker backcatalog
+
+all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus experimentuploader plateExplorer graphmaker backcatalog cropFrames
 
 
 clean:
