@@ -1,6 +1,6 @@
 # define commands to use for compilation
 CXX = g++
-CFLAGS = -g -w -Wall -Wpedantic -O0
+CFLAGS = -g -w -Wall -Wpedantic -O0 -std=c++11
 
 OPENCV_LIB = -lopencv_ml -lopencv_objdetect -lopencv_shape -lopencv_stitching -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_video -lopencv_photo -lopencv_imgproc -lopencv_flann -lopencv_core
 
@@ -55,8 +55,12 @@ plateExplorer: src/plateExplorer.cpp
 graphmaker: src/graphmaker.cpp
 	$(CXX) $(CFLAGS) src/graphmaker.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/graphmaker
 
+trainingSetExport: src/trainingSetExport.cpp
+	$(CXX) $(CFLAGS) src/trainingSetExport.cpp $(LIB) $(OPENCV_LIB) -lcgicc -o bin/trainingSetExport
 
-all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus experimentuploader plateExplorer graphmaker backcatalog cropFrames
+
+all: alignerd controller experimentbrowser marker scheduler cgiccretro wormlistupdater colorpicker wormbotstatus experimentuploader plateExplorer graphmaker backcatalog cropFrames trainingSetExport
+
 
 
 clean:
