@@ -109,7 +109,12 @@ vector<int> readOpenPlates(void){
      string inputline;
      string header;
       cout << hr()<< b("CURRENTLY ACTIVE EXPERIMENTS:") << br() << h2("select a checkbox to stop an experiment")<< br()<< endl;
-      cout << "<div style=\"height:200px;color:white;background-color:crimson;border:1px solid#ccc; overflow:auto;\">" << endl;
+      cout << "<div style=\"height:800px;color:white;background-color:crimson;border:1px solid#ccc; overflow:auto;\">" << endl;
+	cout << " <script type=\"text/javascript\" src=\"http://code.jquery.com/jquery-latest.min.js\" /></script>" << endl;
+	cout << "<script type=\"text/javascript\"> " << endl;
+	cout << "function toggle(source) {var checkboxes = document.querySelectorAll('input[name^=\"v\"]');for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i] != source) checkboxes[i].checked = source.checked;    }   var checkboxen = document.querySelectorAll('input[name^=\"del\"]');for (var i = 0; i < checkboxen.length; i++) { if (checkboxen[i] != source) checkboxen[i].checked = source.checked;    }   }" << endl;
+	cout << "</script>" << endl;
+ 
 
      string token;
      getline(ifile,header);
@@ -155,13 +160,14 @@ vector<int> readOpenPlates(void){
      					 cout << br() << endl;
      					 stringstream  expValue;
      					 expValue << expID;
-     					 cout << "<input type=\"checkbox\" name=\"" << expValue.str().c_str()<<"\">"  <<endl;
+     					 cout << "<input type=\"checkbox\" name=\"del" << expValue.str().c_str()<<"\">"  <<endl;
      					 cout << b("expID:") << expID << b(" plate:") << plate << b(" well:")<<wellname <<b(" investigator:")<<investigator<< b(" title:")<<title<< " "<<description << endl;
      					 cout << "<a href=\"/cgi-bin/marker?loadedexpID=" << expID <<"\" > ANALYZE </a>";
      					 cout << b("VERIFY STOP") << "<input type=\"checkbox\" name=\"v" << expValue.str().c_str()<<"\">" << hr() <<endl;
      				 }//end if active plate
 
      }//end while lines in file
+	cout << "<HR><input type=\"checkbox\" onclick=\"toggle(this);\" />Select All to Delete<br /> " << endl;
      cout << "</div>" << endl;
      vector<int> returnplates;
      //remove used plates
@@ -249,7 +255,7 @@ void processDeletes(void){
 	      for (vector<long>::iterator citer = totalexperiments.begin(); citer != totalexperiments.end(); citer++){
 	    	  int todelete=0;
 	    	  stringstream sss;
-	    	  sss << (*citer);
+	    	  sss << "del" << (*citer);
 	    	  todelete = cgi.queryCheckbox(sss.str());
 	    	     if( todelete ) {
 
