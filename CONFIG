@@ -10,6 +10,7 @@ WD=(pwd)
 ROOT_DIR=$(cat var/root_dir)
 WEB_DIR=/var/www/html/wormbot
 CGI_DIR=$ROOT_DIR/cgi-bin
+GRAPHS_DIR=$ROOT_DIR/graphs
 
 # handle installation directory
 if [ "$#" -eq 1 ]
@@ -28,6 +29,8 @@ if [ ! -d "/wormbot" ]; then
 sudo mkdir $ROOT_DIR #this needs to be setup already in the LVM...should just symlink it but if it's not there we need to make it
 fi
 
+sudo mkdir $GRAPHS_DIR
+sudo chmod a+wr $GRAPHS_DIR
 sudo mkdir $CGI_DIR #make the password protected CGI-bin
 #sudo mkdir $WEB_DIR
 sudo ln --symbolic $ROOT_DIR $WEB_DIR

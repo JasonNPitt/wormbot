@@ -130,7 +130,7 @@ string removeNastiness(string jerky){
 
 
 
-void dumpLifespan(long expID, bool useMin, bool useIDs, vector<int> fieldoutputs){
+void dumpLifespan(long expID, bool useMin, bool useIDs, vector<int> fieldoutputs, ofstream& ofile, bool useTab){
 	int linecounter =0; //used to avoid % in description fields
 	stringstream filename;
 	stringstream metaouts;
@@ -141,7 +141,9 @@ void dumpLifespan(long expID, bool useMin, bool useIDs, vector<int> fieldoutputs
 	//cout << filename.str() << "<P>" << endl;
 	if (!ifile) {
 		cout << "# lifespan data for experimentID " << expID << " was not found" << endl;
-	}//end if file not found	
+	}//end if file not found
+
+		
 
 	string line;
 	bool isMinutes=false;
@@ -167,15 +169,23 @@ void dumpLifespan(long expID, bool useMin, bool useIDs, vector<int> fieldoutputs
 			if (!useMin)
 				return; else doDump=true;
 		} //end if found the second oasis descriptor
-		boost::replace_all(line, ",", "\t");
+		 if (useTab) boost::replace_all(line, ",", "\t");
 		if (doDump){
 			if (descriptorLine && useIDs){
 			   cout << "%" << expID << endl;
 			   cout <<  metaouts.str();
+
+			   ofile << "%" << expID << endl;
+			   ofile <<  metaouts.str();	
 			   
 			} else{
 				cout << line << endl;
-				if (descriptorLine) cout <<  metaouts.str();				 
+				ofile << line << endl;
+				
+				if (descriptorLine) {
+					cout <<  metaouts.str();
+					ofile <<  metaouts.str();
+				}				 
 				
 			}
 		}//end if dump
@@ -211,8 +221,16 @@ int main(int argc, char **argv) {
 		
 		cout << "Oasis Output=" "<P><pre>" << endl;
 
-
 		
+		//genetrate a filname using the epoch
+		time_t t;
+		time(&t);
+		stringstream oss;
+		oss << "/wormbot/graphs/" << t << "_graphmaker_output.csv" ;
+
+		cout << "<a href=\"" << oss.str() << "\">Download: " << oss.str() << "</a><P>" << endl;
+
+		ofstream outputfile(oss.str().c_str());
 
 		stringstream restorecommand;
 
@@ -222,9 +240,11 @@ int main(int argc, char **argv) {
 		bool useMinutes =false;
 		bool preDead = false;
 		bool useIDs= false;
+		bool useTabs = false;
 
 		useMinutes=cgi.queryCheckbox("useMinutes");
 		useIDs= cgi.queryCheckbox("useIDs");
+		useTabs= cgi.queryCheckbox("useTabs");
 
 		for (int i=0; i < MAXOUTFLAGS; i++) {
 			stringstream checkbx;
@@ -240,10 +260,10 @@ int main(int argc, char **argv) {
 				vector<string> ids;
 				boost::split(ids,atoken,boost::is_any_of("-"));
 				for (long i=atol(ids[0].c_str()); i <= atol(ids[1].c_str()); i++){
-					dumpLifespan(i,useMinutes, useIDs, outputflags);
+					dumpLifespan(i,useMinutes, useIDs, outputflags, outputfile, useTabs);
 				}//end for each id in range	
 			} //end if found a range
-			else dumpLifespan(atol(atoken.c_str()),useMinutes, useIDs,outputflags);
+			else dumpLifespan(atol(atoken.c_str()),useMinutes, useIDs,outputflags, outputfile, useTabs);
 			
 			cout << "<P>" << endl;
 
@@ -251,25 +271,12 @@ int main(int argc, char **argv) {
 
 		}//end while experiments in list
 
-		
-
-		
-		
-		
-		 
-
-		
-		
-
-
-		
-		
-
-		
+	
 	
 		
 		// Close the HTML document
 		cout << "</pre> " << body() << html();
+		outputfile.close();
 
 	} catch(exception& e) {
 		// handle any errors - omitted for brevity
