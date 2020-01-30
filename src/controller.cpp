@@ -137,12 +137,31 @@ int calcCurrSlot() {
 }
 
 
-int sendCommand(string command){
+string sendCommand(string command){
+	
+	vector<string> returnbuff;
 	string read;
 	ardu << command << endl;
 	//wait for readysignal
-	while (read.find("RR") == string::npos){ getline(ardu,read);}
-	return 0;
+	while (read.find("RR") == string::npos){ 
+		getline(ardu,read);
+		returnbuff.push_back(read);
+	}
+	
+	//find a temp log
+	for (vector<string>::iterator citer = returnbuff.begin(); citer != returnbuff.end(); citer++){
+		if ((*citer).find("C*") != string::npos){
+			stringstream thetemp;
+			thetemp << (*citer);
+			string result;
+			getline(thetemp,result,'*');
+			getline(thetemp,result);
+			return result;
+		}//end if found temp
+	} //end for each returned line
+	return read;
+
+	
 }
 
 //returns the average of a vector of int
@@ -541,6 +560,24 @@ public:
 		return (int)(current - starttime + SECONDS_IN_HOUR) / SECONDS_IN_DAY + startingAge;
 	}
 
+	void recordTemp(string tempnum){
+		stringstream ss,filename;
+		time_t current;
+		time(&current);
+		
+		ss << "TR" ;
+		
+		string treturn=sendCommand(ss.str());
+		cout << "\ntemp =" << treturn << endl;
+		
+		//log the temp to a file
+		filename << directory << "temp" << tempnum << ".csv";
+		ofstream ofile(filename.str().c_str());
+		ofile << current << "," << treturn << endl;
+		ofile.close();
+		
+		
+	}//end recordTemp
 
 	int capture_frame(int doAlign){
 
@@ -598,7 +635,7 @@ public:
 			stringstream lastfilename;
 			stringstream number;
 			number << setfill('0') << setw(6) << currentframe;
-			
+			recordTemp(number.str());
 			filename << directory << "frame" << number.str() << ".png";
 
 			// for first frame try to find a pink bead and if found generate a loc-nar.csv file

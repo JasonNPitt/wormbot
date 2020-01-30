@@ -26,6 +26,7 @@ int dirPinY = mePort[PORT_2].s1;
 int stpPinY = mePort[PORT_2].s2;
 
 int lampPin = 8; //orion port 7 black wire
+int tempPin = A1; 
 
 MeLimitSwitch xplimitSwitch(PORT_6,1);
 MeLimitSwitch xmlimitSwitch(PORT_6,2);
@@ -326,6 +327,7 @@ void setup() {
   pinMode(dirPinY, OUTPUT);
   pinMode(stpPinY, OUTPUT);
   pinMode(lampPin, OUTPUT);
+  pinMode(tempPin, INPUT);
   
   //initNormal();
   //initQuadratic();
@@ -339,6 +341,18 @@ void setup() {
   Serial.println("RR");
   
 }//end setup
+
+void readTemp(void){
+  int volts = analogRead(tempPin);
+  float mvlt= (volts/1024.0) * 5000;
+  float f= mvlt/10;
+
+float c= (f - 32) * (5.0/9.0);
+
+Serial.print ("C*");
+Serial.println(c);
+
+}//end readtemp
 
 void loop(){
   
@@ -387,6 +401,9 @@ void loop(){
         int lumos = lightamount.toInt();
         setLamp(lumos);
         
+    } else
+    if (inputString.indexOf("TR") >=0){
+        readTemp();
     } else
     if (inputString.indexOf("P")>=0){ 
       Serial.print (curr_x);
