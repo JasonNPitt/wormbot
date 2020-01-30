@@ -67,7 +67,7 @@ var highthresh=0;
 var serverLocked= false; //the server busy lock
 var totalframes =0; //hold the total number of frames from description.txt
 var lifespanrequested = false;  //hold a flag to see if you asked for the lifespan to be updated
-
+var temperature=""; //holds the current temperature
 
 //define rectangle object
 var rect = {x:0,y:0,w:0,h:0,f:0};
@@ -114,6 +114,12 @@ function drawExpID(){
 	ctx.fillStyle = "cyan";
 	ctx.fillText("ExpID = " + expID, 30, 30);
 }//end drawExpID
+
+function drawTemp(){
+	ctx.font = "30px Arial";
+	ctx.fillStyle = "cyan";
+	ctx.fillText("Temp=" + temperature + "C", 500, 30);
+}//end drawTemp
 
 
 function killWorm(tx,ty){
@@ -179,10 +185,11 @@ function LoadFrame(){
                 ctx.drawImage(img, 0, 0);
                 };
 
-
+	getCurrTemp();
         drawRects();
 	drawDeadworms();
 	drawExpID();
+	drawTemp();
 
 }//end load frame
 
@@ -249,6 +256,22 @@ function getLastFile(){
   	});
 	//return the 6th line which holds the lastframe
 }//end getLastFile
+
+function getCurrTemp(){
+	filename = "/wormbot/" + expID + "/temp" + pad(framenumber) + ".csv";
+	$.ajax({
+    		url:filename,
+    		success: function (data){
+			lines=data.split(',');
+			temperature = lines[1];	
+	
+		},//end success
+		error: function (){
+			temperature = "NA";
+		}//end error
+	});
+
+}//end getCurrTemp
 
 
 function checkLock(){
@@ -670,7 +693,8 @@ function handleMouseMove(e) {
     if (isDown) ctx.strokeRect(startX, startY, width, height);
     drawRects();
     drawDeadworms();	
-    drawExpID();    
+    drawExpID(); 
+    drawTemp();	   
     
 
 }
