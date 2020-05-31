@@ -41,7 +41,7 @@ string currfilename;
 
 
 
-void readDirectory(string fulldirectory, string outputdir, long exp, int framesperexp, long randLow, long randHigh, long segment);
+void readDirectory(string fulldirectory, string outputdir, long exp, int framesperexp, long randLow, long randHigh, long segment, string tagname);
 
 
 
@@ -67,7 +67,7 @@ string swapTimes(string filename, string newfilename){
 
 
 
-void scanRobotDir(string robotdir,string outputdir, int framesperexp, int numexps, int maxframes,long randLow, long randHigh, long expLow, long expHigh, long segment, bool processall){
+void scanRobotDir(string robotdir,string outputdir, int framesperexp, int numexps, int maxframes,long randLow, long randHigh, long expLow, long expHigh, long segment, bool processall, string tagname){
 	
 
 	
@@ -113,7 +113,7 @@ void scanRobotDir(string robotdir,string outputdir, int framesperexp, int numexp
 		stringstream ss;
 		ss << robotdir << (*it) << "/";
 		cout << "reading expID:" << ss.str() << endl;
-		readDirectory(ss.str(),outputdir,(*it),framesperexp,randLow,randHigh,segment);
+		readDirectory(ss.str(),outputdir,(*it),framesperexp,randLow,randHigh,segment,tagname);
 
 	}//end for each ID in the directory
 
@@ -160,7 +160,7 @@ long getLifespan(string filename, string fullpath){
 
 }//end getexperimentstarttime
 
-void readDirectory(string fulldirectory, string outputdir, long exp, int framesperexp, long randLow, long randHigh,long segment){
+void readDirectory(string fulldirectory, string outputdir, long exp, int framesperexp, long randLow, long randHigh,long segment, string tagname){
 
 	glob_t glob_result;
 	glob_t aligned_result;
@@ -211,7 +211,7 @@ void readDirectory(string fulldirectory, string outputdir, long exp, int framesp
 			} //while not in range find random nums
 			if (bad++ > BADFRAMES){ break; }
 			else { 
-				ss << "cp " << filelist[thefile] << " " << outputdir << "exp" << exp << "_frame" << thefile << "_age" << frameage << ".png" << endl;
+				ss << "cp " << filelist[thefile] << " " << outputdir << "name" << tagname << "_exp" << exp << "_frame" << thefile << "_age" << frameage << ".png" << endl;
 				cout << ss.str();		
 				system(ss.str().c_str());
 			}
@@ -245,7 +245,7 @@ void readDirectory(string fulldirectory, string outputdir, long exp, int framesp
 			long frameage = getLifespan(filelist[thefile],fulldirectory);
 			cout << "thefile = " << thefile << endl;
 
-			ss << "cp " << filelist[thefile] << " " << outputdir << "exp" << exp << "_frame" << thefile << "_age" << frameage << ".png" << endl;
+			ss << "cp " << filelist[thefile] << " " << outputdir << "name" << tagname << "_exp" << exp << "_frame" << thefile << "_age" << frameage << ".png" << endl;
 			cout << ss.str();		
 			system(ss.str().c_str());
 		
@@ -257,11 +257,11 @@ void readDirectory(string fulldirectory, string outputdir, long exp, int framesp
 	}//end if segments specified
 
 	stringstream sss; 
-	sss << "cp " << fulldirectory << "description.txt " << outputdir << "exp" << exp << "_description.txt" << endl;
+	sss << "cp " << fulldirectory << "description.txt " << outputdir << "name" << tagname <<"_exp" << exp << "_description.txt" << endl;
 	system(sss.str().c_str());
 	
 	stringstream ssss; 
-	ssss << "cp " << fulldirectory << "wormlist.csv " << outputdir << "exp" << exp << "_wormlist.csv" << endl;
+	ssss << "cp " << fulldirectory << "wormlist.csv " << outputdir << "name" << tagname << "_exp" << exp << "_wormlist.csv" << endl;
 	system(ssss.str().c_str());
 
 
@@ -297,7 +297,7 @@ int main(int argc, char **argv) {
 	int maxframes = 100; //total number of frames to export
 	long segment = 0; //number of temporal segments to sample evenly, zero leads to random sampling from entire experiment
 	bool all = false; //flag to parse each experiment in the target directory
-
+	stringstream tagname(""); //string tag for filename output
 	
 	
 
@@ -367,6 +367,11 @@ int main(int argc, char **argv) {
 			if (atoi(argv[i+1])) all=true;
 		break;
 
+		case 't':
+		case 'T':
+			tagname << argv[i+1];
+		break;
+
 		
 
 			
@@ -377,7 +382,7 @@ int main(int argc, char **argv) {
     }// end for each argument
 
 	
-	    scanRobotDir(apath.str(),outputpath.str(),fperExp,numexps,maxframes,randLow,randHigh, expLow, expHigh, segment, all);
+	    scanRobotDir(apath.str(),outputpath.str(),fperExp,numexps,maxframes,randLow,randHigh, expLow, expHigh, segment, all, tagname.str());
 
     exit(EXIT_SUCCESS);
 
