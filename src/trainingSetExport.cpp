@@ -175,7 +175,7 @@ void readDirectory(string fulldirectory, string outputdir, long exp, int framesp
 
 
 	stringstream globpattern;
-	globpattern  << fulldirectory.c_str() << string("frame*.png");
+	globpattern  << fulldirectory.c_str() << string("aligned*.png");
      //cout << "directory:" << directory << "<br>" << endl;
 	cout <<"globpat:" << globpattern.str() << endl;
 
@@ -223,7 +223,7 @@ void readDirectory(string fulldirectory, string outputdir, long exp, int framesp
 		//system
 		
 		int bad =0;
-		
+		if (segment >= numframes) return; 
 		//get segment size
 		long segsize = numframes/segment;
 
