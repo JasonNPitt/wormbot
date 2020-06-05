@@ -92,6 +92,20 @@ long getNewExpID(void) {
 	return (expID);
 }
 
+void loadCss(void) {
+	string component_path = datapath + "scheduler_parts/"; // TODO
+	string filename = "scheduler.css";
+	filename = component_path + filename;
+	ifstream cssStream;
+	cssStream.open(filename);
+	string css;
+	cout << "<style>" << endl;
+	while (getline(cssStream, css)) {
+		css += "\n";
+		cout << css << endl;
+	}
+	cout << "</style>" << endl;
+}
 
 vector<int> readOpenPlates(void){
 	string inputfilename("RRRjoblist.csv");
@@ -109,12 +123,14 @@ vector<int> readOpenPlates(void){
      string inputline;
      string header;
       cout << hr()<< b("CURRENTLY ACTIVE EXPERIMENTS:") << br() << h2("select a checkbox to stop an experiment")<< br()<< endl;
-      cout << "<div style=\"height:800px;color:white;background-color:crimson;border:1px solid#ccc; overflow:auto;\">" << endl;
+      cout << "<div class=\"task-list\">" << endl;
 	cout << " <script type=\"text/javascript\" src=\"http://code.jquery.com/jquery-latest.min.js\" /></script>" << endl;
 	cout << "<script type=\"text/javascript\"> " << endl;
 	cout << "function toggle(source) {var checkboxes = document.querySelectorAll('input[name^=\"v\"]');for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i] != source) checkboxes[i].checked = source.checked;    }   var checkboxen = document.querySelectorAll('input[name^=\"del\"]');for (var i = 0; i < checkboxen.length; i++) { if (checkboxen[i] != source) checkboxen[i].checked = source.checked;    }   }" << endl;
 	cout << "</script>" << endl;
- 
+	cout << "<table id=\"task-table\">" << endl;
+	cout <<  "<tr><th>ExpID</th><th>Plate#</th><th>Well#</th><th>Investigator</th><th>Title</th><th>Link</th><th>Select</th><th>Verify</th></tr>" << endl;
+ 	
 
      string token;
      getline(ifile,header);
@@ -131,6 +147,9 @@ vector<int> readOpenPlates(void){
     	 string wellname;
     	 string activeTimelapse;
      	 string activeDailyMonitor;
+     	 string startingAge;
+     	 string startingN;
+     	 string strain;
     	 long expID=0;
 
 //            cout << "inputline:" << inputline << endl;
@@ -147,27 +166,45 @@ vector<int> readOpenPlates(void){
      				 getline(ss, token, ',');
      				 //yval = atoi(token.c_str());
      				 getline(ss, directory, ',');
-     				getline(ss, activeTimelapse, ',');
+     				 getline(ss, activeTimelapse, ',');
       				 getline(ss, activeDailyMonitor, ',');
      				 getline(ss, email, ',');
      				 getline(ss, investigator, ',');
      				 getline(ss, title, ',');
      				 getline(ss, description, ',');
+     				 // getline(ss, startingAge, ',');
+     				 // getline(ss, startingN, ',');
+     				 // getline(ss, strain, ',');
+
 
      //				 cout << "status" << status << endl;
      				 if (status){
      					 platesinuse.push_back(plate);
-     					 cout << br() << endl;
      					 stringstream  expValue;
      					 expValue << expID;
-     					 cout << "<input type=\"checkbox\" name=\"del" << expValue.str().c_str()<<"\">"  <<endl;
-     					 cout << b("expID:") << expID << b(" plate:") << plate << b(" well:")<<wellname <<b(" investigator:")<<investigator<< b(" title:")<<title<< " "<<description << endl;
-     					 cout << "<a href=\"/cgi-bin/marker?loadedexpID=" << expID <<"\" > ANALYZE </a>";
-     					 cout << b("VERIFY STOP") << "<input type=\"checkbox\" name=\"v" << expValue.str().c_str()<<"\">" << hr() <<endl;
+
+     					 cout << "<tr>" << endl;
+     					 cout << "<th>" << expID << "</th>" << endl;
+     					 cout << "<th>" << plate << "</th>" << endl;
+     					 cout << "<th>" << wellname << "</th>" << endl;
+     					 cout << "<th>" << investigator << "</th>" << endl;
+     					 cout << "<th>" << title << " " << description << "</th>" << endl;
+     					 cout << "<th>" << "<a href=\"/cgi-bin/marker?loadedexpID=" << expID <<"\" > ANALYZE </a>" << "</th>" << endl;
+     					 cout << "<th><input type=\"checkbox\" name=\"del" << expValue.str().c_str()<<"\"></th>" << endl;
+     					 cout << "<th><input type=\"checkbox\" name=\"v" << expValue.str().c_str()<<"\"></th>" << endl;
+     					 cout << "<th hidden disabled>" << email << "</th>" << endl;
+     					 cout << "<th hidden disabled>" << title << "</th>" << endl;
+     					 cout << "<th hidden disabled>" << description << "</th>" << endl;
+     					 cout << "<th hidden disabled>" << strain << "</th>" << endl;
+     					 cout << "<th hidden disabled>" << startingN << "</th>" << endl;
+     					 cout << "<th hidden disabled>" << startingAge << "</th>" << endl;
+     					 cout << "</tr>" << endl;
      				 }//end if active plate
 
      }//end while lines in file
-	cout << "<HR><input type=\"checkbox\" onclick=\"toggle(this);\" />Select All to Delete<br /> " << endl;
+
+	cout << "</table>" << endl;
+		cout << "<input type=\"checkbox\" onclick=\"toggle(this);\" />Select All to Delete<br /> " << endl;
      cout << "</div>" << endl;
      vector<int> returnplates;
      //remove used plates
@@ -532,6 +569,7 @@ void processInput(void){
 		 string sendline;
 		 while (getline(os,sendline)){
 			 wfile << sendline << endl;
+			 cout << "<script>console.log(" << sendline << ");<script>" << endl;
 		 }//end while lines to dump
 
 		 wfile.close();
@@ -549,10 +587,15 @@ void processInput(void){
 string buildInputField(vector<int> openplates){
 	stringstream ss;
 
-	ss << "<select name=\"plate\"> ";
-	for (vector<int>::iterator citer = openplates.begin(); citer != openplates.end(); citer++){
-	           ss << "<option name=\"" << *citer << "\" > " << *citer << "</option>";
-	      }//end for openplates
+	ss << "<select name=\"plate\" id=\"select-plate\" onchange=fillSelectedPlateWithOldData(this.value)> ";
+	// for (vector<int>::iterator citer = openplates.begin(); citer != openplates.end(); citer++){
+	//            ss << "<option name=\"" << *citer << "\" > " << *citer << "</option>";
+	// }//end for openplates
+
+	// for now, hard code 12 plates into it
+	for (int i = 1; i <= 12; i++) {
+		ss << "<option name=\"" << i << "\" > " << i << "</option>";
+	}
 	ss << "</select>";
 
 	return(ss.str());
@@ -573,13 +616,28 @@ int main(int argc, char **argv) {
 		cout << body() << endl;
 
 		//cout << img().set("src","http://kaeberleinlab.org/images/kaeberlein-lab-logo-2.png") << endl;
-		
-		
-		cout << br() <<endl;
-		cout << img().set("src", "/wormbot/img/Bender.png").set("width","300") << endl;
-		cout << br() <<endl;
-		cout << "<h3>SCHEDULER</h3>";
-		cout << form().set("action", "/cgi-bin/scheduler").set("method", "POST") << endl;
+		loadCss();
+		string temp;
+
+		string component_path = datapath + "scheduler_parts/"; // TODO: this need to be the path where you put scheduler_components folder
+
+		// ifstream jsStyleStream(datapath + "scheduler_parts/scheduler.js");
+		ifstream jsStyleStream(component_path + "scheduler.js");
+		cout << "<script>" << endl;
+		while (getline(jsStyleStream, temp)) {
+			temp += "\n";
+			cout << temp << endl;
+		}
+		cout << "</script>" << endl;
+		ifstream sidebarStream(component_path + "navbar.html");
+		while (getline(sidebarStream, temp)) {
+			temp += "\n";
+			cout << temp << endl;
+		}
+    	cout << "<div id=\"main\">" << endl;
+        // cout << "<span id=\"btn-sidebar\" class=\"btn-sidebar\" onclick=\"controlSideBar()\">&#60;</span>" << endl;
+		cout << "<h3><a><span id=\"btn-sidebar\" class=\"btn-sidebar\" onclick=\"controlSideBar()\">&#60;</span></a> SCHEDULER</h3>";
+		cout << form().set("action", "/cgi-bin/scheduler").set("method", "POST");
 
 		processDeletes();
 		processInput();
@@ -588,16 +646,29 @@ int main(int argc, char **argv) {
 
 		vector<int> openplates;
 		openplates = readOpenPlates();
-		cout << hr()<< h3("Open plate slots: ");
-
+		cout << hr() << endl;
+		cout << "<span id=\"open-plates-display\" style=\"margin-top:10%\">";
 		for (vector<int>::iterator citer = openplates.begin(); citer != openplates.end(); citer++){
-			 cout << (*citer) << ", ";
+			if (citer + 1 == openplates.end()) {
+				cout << (*citer);
+			} else {
+				cout << (*citer) << ", ";
+			}
 		}
+		cout << "</span>" << endl;
 		cout << br() <<endl;
 
-		cout << h2("Add a plate") << br() << "Select plate slot: " << br() << endl;
+		cout << h2("Add a plate") << br() << "Select plate slot: " << endl;
 
-		cout << buildInputField(openplates) << br() << br() << endl;
+		cout << buildInputField(openplates) << endl;
+
+		cout << "<button type=\"button\" id=\"myBtn\">Open Template</button>" << endl;
+		// ifstream modalStream(datapath + "scheduler_parts/modal.html");
+		ifstream modalStream(component_path + "modal.html");
+		while (getline(modalStream, temp)) {
+			temp += "\n";
+			cout << temp << endl;
+		}
 
 		string plateformloc;
 		plateformloc = string(datapath + "plateform.html");
@@ -605,7 +676,7 @@ int main(int argc, char **argv) {
 		string formline;
 		stringstream ss;
 
-		cout << "<div style=\"height:200px;color:white;background-color:darkolivegreen;border:1px solid#ccc; overflow:auto;\">" << endl;
+		cout << "<div class=\"plate-list\">" << endl;
 
 		while (getline(plateform,formline)){
 			ss << formline;
@@ -619,8 +690,10 @@ int main(int argc, char **argv) {
         }
 
 		cout << "</div>" << endl;
-		cout << "<input type=\"submit\" value=\"Update Robot\"> <input type=\"reset\" value=\"clear form\">" << endl;
+		cout << "<input type=\"submit\" style=\"float:right;margin: 1% 1% 1% 0%;\" value=\"Update Robot\"> <input type=\"reset\" style=\"float:right;margin: 1% 1% 1% 0%;\" value=\"clear form\">" << endl;
 		cout << "</form>" << endl;
+		cout << "</div>" << endl;
+		cout << "<script>" << "assignDefaultSelectOption();movePlatesDisplay();fillSelectedPlateWithOldData();addAllSlotListeners();" << "</script>" << endl;
 		// Close the HTML document
 		cout << body() << html();
 

@@ -1,0 +1,47 @@
+<div id="SideBar" class="sidebar">
+<button class="collapsible" id="open-sidebar" onclick="changeBrightness()">&#9776; open menu</button>
+<div class="content">
+            <ul>
+                <li>
+                    <a href="http://127.0.0.1/cgi-bin/scheduler">Schduler</a>
+
+                </li>
+                <li>
+                    <a href="http://localhost/retrograde/retrograde.html">Retrograde</a>
+
+                </li>
+                <li>
+                    <a href="http://127.0.0.1/wormbot/cgi-bin/experimentbrowser">ExperimentBrowser</a>
+
+                </li>
+                <li>
+                    <a href="http://127.0.0.1/wormbot/status.html">Status</a>
+
+                </li>
+
+            </ul>
+        </div>
+        <div id="open-slots">
+            <h3>Open plate slots: </h3>
+        </div>
+        <div id="form-control">
+            <input type="submit" value="Update Robot" onclick="document.forms[0].submit();"> <br>
+            <input type="reset" value="clear form" onclick="document.forms[0].reset();">
+        </div>
+    </div>
+    <script>
+        var coll = document.getElementsByClassName("collapsible");
+        var i;
+        // console.log(coll.length);
+        for (i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function () {
+                this.classList.toggle("active");
+                var content = this.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        }
+    </script>

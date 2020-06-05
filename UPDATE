@@ -20,6 +20,7 @@ WD=(pwd)
 ROOT_DIR=$(cat var/root_dir)
 WEB_DIR=/var/www/html/wormbot
 CGI_DIR=$ROOT_DIR/cgi-bin
+SCHEDULER_DIR=$ROOT_DIR/scheduler_parts
 
 # handle installation directory
 if [ "$#" -eq 1 ]
@@ -54,16 +55,11 @@ sudo cp data_path /usr/lib/cgi-bin #this is for compatibilty following security 
 # move retrograde files to the web html retrograde directory
 sudo cp -r retrograde/ /var/www/html/
 
+sudi cp scheduler_component/* $SCHEDULER_DIR
+
 # move script for wormbot in command-line
 sudo cp bin/wormbot /bin
 
-#move launch script to /etc/rc.local
-echo "Overwriting /etc/rc.local"
-sudo head -n 1 /etc/rc.local > /tmp/temp.rc.local ; mv /tmp/temp.rc.local /etc/rc.local
-sudo echo "/wormbot/master_control_program" >> /etc/rc.local
-sudo echo "exit 0" >> /etc/rc.local
-sudo chmod +x /etc/rc.local
-sudo systemctl enable rc-local.service
 
 
 if $TESTING ;

@@ -36,7 +36,16 @@ using namespace cgicc;
 Cgicc cgi;
 string datapath;
 
-
+const std::string css = 
+"table {font-family: \"Lato\", sans-serif;border-collapse: collapse;width: 88%;margin:1% 6%}\n"
+"td,th {border: 1px solid #ddd;padding: 8px;}\n"
+"tr:nth-child(even) {background-color: #f2f2f2;}\n"
+"tr:hover {background-color: #ddd;}\n"
+"body {margin: 0;font-family: Arial, Helvetica, sans-serif;}\n"
+".topnav {overflow: hidden;background-color: #333;display: flex;position: fixed;width: 100%;}\n"
+".topnav a { float: left;color: #f2f2f2;text-align: center;padding: 14px 16px;text-decoration: none;font-size: 17px;}\n"
+".topnav a:hover {background-color: #ddd;color: black;}\n"
+".topnav a.active {background-color: #4CAF50;color: white;}\n";
 
 
 string checkForArchive(int id) {
@@ -71,7 +80,7 @@ int main(int argc, char **argv) {
       cout << html() << endl << endl;
       cout << head(title("WormBot Experiment Browser")) << endl << endl;
       cout <<   "<script type=\"text/javascript\" src=\"//code.jquery.com/jquery-1.9.1.js\"></script>" << endl;	
-      cout << "<style>table, th, td {border: 1px solid black;}</style>" << endl << endl;
+      cout << "<style>" << css << "</style>" << endl << endl;
       cout << body() << endl;
       cout << br() <<endl;
 
@@ -109,7 +118,17 @@ int main(int argc, char **argv) {
       // Set up the HTML document
       
 
-      cout << "<h1>Experiment Browser</h1>\n"
+      cout << "<div class=\"topnav\">"
+      	   << "<a href=\"./Scheduler.html\">Scheduler</a>"
+           << "<a href=\"#\">Retrograde</a>"
+           << "<a href=\".\">Experiment Browser</a>"
+           << "<a href=\"#\">Status</a>"
+           << "</div>"
+
+
+
+
+           << "<div style=\"padding-top: 3%; padding-left:1%\"><h1>Experiment Browser</h1><div>\n"
     	   << "<table>\n"
 		   << "  <tr>\n"
 		   << "    <th>Exp ID</th>\n"

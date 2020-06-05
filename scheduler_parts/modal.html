@@ -1,0 +1,292 @@
+<style>
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+border-radius: 2%;
+}
+
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #888;
+  border-radius: 2%;
+  width: 80%;
+	height: 80%;
+  
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  -webkit-animation-name: animatetop;
+  -webkit-animation-duration: 0.4s;
+  animation-name: animatetop;
+  animation-duration: 0.4s
+}
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+  from {top:-300px; opacity:0} 
+  to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+  from {top:-300px; opacity:0}
+  to {top:0; opacity:1}
+}
+
+/* The Close Button */
+.close {
+  color: gray;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  padding: 2%;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-left {
+  height: 100%;
+  width: 50%;
+  color: orange;
+  float: left;
+background-color:white;
+}
+
+
+.modal-right {
+  height: 100%;
+  width: 49%;
+  float: right;
+  border-left: solid 1px orange;
+background-color:white;
+}
+
+.plate-info-modal {
+	border: solid 1px gray;
+border-radius:3%;
+	float: center;
+	margin: 20% 20%;
+	padding:5%
+	
+}
+
+.modal-left h2{
+	float: center;
+	margin-left: 10%;
+}
+
+.well-matrix {
+margin: 10% 5%;
+	height:150px;
+display:flex;
+flex-direction: row;
+flex-wrap : wrap;
+justify-content: space-between;
+text-align:center;
+
+}
+.entry{
+flex-basis: 20%;
+flex-shrink:0;
+padding: 6% 3 6% 3;
+margin: 5% 0;
+border: solid 1px orange;
+border-radius: 50%;
+transition: 0.3s background-color;
+transition: 0.3s color;
+}
+
+.entry:hover {
+background-color:orange;
+color:white
+}
+
+</style>
+
+
+<!-- Trigger/Open The Modal -->
+
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <div class="model-top">
+	
+    </div>
+    <div class="modal-left">
+      
+      <h2>Select Wells</h2>
+	<button type="button" onclick="selectAll()" style="margin:5% 0 0 5%">Select All</button>
+	<button type="button" onclick="deselectAll()" style="margin:5% 0 0 5%">Deselect All</button><button type="button" onclick="applyChanges()" style="margin:5% 0 0 5%">Apply Changes</button>
+	<div class="well-matrix">
+	
+		<div class="entry">A1</div>
+		<div class="entry">A2</div>
+		<div class="entry">A3</div>
+		<div class="entry">A4</div>
+	
+	
+		<div class="entry">B1</div>
+		<div class="entry">B2</div>
+		<div class="entry">B3</div>
+		<div class="entry">B4</div>
+	
+	
+		<div class="entry">C1</div>
+		<div class="entry">C2</div>
+		<div class="entry">C3</div>
+		<div class="entry">C4</div>
+	
+	</div>
+
+    </div>
+
+    <div class="modal-right">
+	<span class="close">&times;</span>
+      <div class="plate-info-modal">
+		Activate Timelapse<input type="checkbox" name="active"> <br>
+		Daily Monitor<input type="checkbox" name="adm"> <br>
+		 Investigator:<br><input type="text" name="investigator"=><br>
+		 Email:<br><input type="text" name="email"=><br>
+		 Title:<br><input type="text" name="title"><br>
+		Descripiton:<br><input type="text" name="description"><br>
+		Strain:<br><input type="text" name="strain" =><br>
+		Starting N:<br><input type="text" name="startn" =><br>
+		Starting Age(days):<br><input type="text" name="startage"=><br>
+	</div>
+    </div>
+	
+  </div>
+
+</div>
+
+<script>
+
+var setSelected = new Set();
+var map = new Map([
+  ['A1', 0],
+  ['A2', 1],
+  ['A3', 2],
+  ['A4', 3],
+  ['B1', 4],
+  ['B2', 5],
+  ['B3', 6],
+  ['B4', 7],
+  ['C1', 8],
+  ['C2', 9],
+  ['C3', 10],
+  ['C4', 11],
+])
+// Get the modal
+var modal = document.getElementById("myModal");
+
+// Get the button that opens the modal
+var btn = document.getElementById("myBtn");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks the button, open the modal 
+btn.onclick = function() {
+  modal.style.display = "block";
+
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  
+if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+function applyChanges() {
+	var modal_content = document.querySelectorAll(".plate-info-modal input");
+	var contentMap = new Map();
+	for (i = 0; i < modal_content.length; i++) {
+		contentMap.set(modal_content[i].name, modal_content[i].value);
+	}
+
+	var plate_list = document.querySelectorAll(".plate-info");
+	for (i = 0; i < plate_list.length; i++) {
+		if (setSelected.has(i)) {
+			// console.log(i);
+			var curr_plate = plate_list[i].querySelectorAll("input");
+			for (j = 0; j < curr_plate.length; j++) {
+				if (j < 2) {
+					curr_plate[j].checked = modal_content[j].checked ? 1 : 0;
+					// console.log(modal_content[j].checked);
+					// console.log(curr_plate[j].checked);
+				} else {
+					var name = curr_plate[j].name;
+					name = name.substring(0, name.length - 1);
+					if (!contentMap.has(name)) {
+						name = name.substring(0, name.length - 1);
+					}
+					curr_plate[j].value = contentMap.get(name);
+				}
+			
+			}
+		}	
+	}
+}
+
+var entries = document.getElementsByClassName("entry");
+function selectAll() {
+	for (i = 0; i < entries.length; i++) {
+			entries[i].style.backgroundColor = "orange";
+			entries[i].style.color = "white";
+			setSelected.add(i);
+	
+	}
+}
+function deselectAll() {
+	for (i = 0; i < entries.length; i++) {
+			entries[i].style.backgroundColor = "white";
+			entries[i].style.color = "orange";
+			setSelected.delete(i);	
+	}
+}
+
+for (i = 0; i < entries.length; i++) {
+	entries[i].addEventListener("click", function (){
+		var text = this.innerHTML;
+				
+		if (this.style.backgroundColor == "orange") {
+			this.style.backgroundColor = "white";
+			this.style.color = "orange";
+			setSelected.delete(map.get(text));		
+		} else {
+			this.style.backgroundColor = "orange";
+			this.style.color = "white";
+			setSelected.add(map.get(text));		
+		}
+	});
+}
+
+console.log()
+
+</script>
+
